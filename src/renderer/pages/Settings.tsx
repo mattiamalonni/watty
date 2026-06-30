@@ -99,6 +99,26 @@ function SliderGroup({
   );
 }
 
+function TestNotificationButton(): React.JSX.Element {
+  const [sent, setSent] = useState(false);
+
+  function handleClick(): void {
+    window.watty.testNotification();
+    setSent(true);
+    setTimeout(() => setSent(false), 2000);
+  }
+
+  return (
+    <button
+      className="bg-surface hover:bg-edge text-primary border-edge shrink-0 cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-50"
+      onClick={handleClick}
+      disabled={sent}
+    >
+      {sent ? 'Sent!' : 'Send Test'}
+    </button>
+  );
+}
+
 export default function Settings(): React.JSX.Element {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const isFirstRender = useRef(true);
@@ -274,6 +294,17 @@ export default function Settings(): React.JSX.Element {
               />
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Test Notification */}
+      <div className="mb-5">
+        <div className="bg-surface border-edge flex items-center justify-between rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-primary text-sm font-medium">Test Notification</span>
+            <span className="text-muted text-xs">Send a test notification to verify system permissions.</span>
+          </div>
+          <TestNotificationButton />
         </div>
       </div>
 

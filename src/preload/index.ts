@@ -14,6 +14,7 @@ const api = {
     log: (type: 'drink' | 'snooze' | 'missed'): Promise<void> => ipcRenderer.invoke('events:log', type),
     deleteAll: (): Promise<{ deleted: boolean }> => ipcRenderer.invoke('events:deleteAll'),
   },
+  testNotification: (): Promise<void> => ipcRenderer.invoke('notification:test'),
   onNavigate: (callback: (payload: { page: 'settings' | 'reports'; tab?: 'today' | 'week' }) => void): (() => void) => {
     const handler = (_: Electron.IpcRendererEvent, payload: { page: 'settings' | 'reports'; tab?: 'today' | 'week' }): void =>
       callback(payload);

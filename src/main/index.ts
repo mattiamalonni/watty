@@ -1,4 +1,4 @@
-import { app, dialog, ipcMain } from 'electron';
+import { Notification, app, dialog, ipcMain } from 'electron';
 import { deleteAllEvents, getDailyEvents, getEarliestEventDate, getWeeklySummary, initDb, logEvent } from './db';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { restartReportNotifiers, startReportNotifiers } from './report-notifier';
@@ -54,6 +54,13 @@ ipcMain.handle('events:getEarliestEventDate', () => getEarliestEventDate());
 
 ipcMain.handle('events:log', (_event, type: 'drink' | 'snooze' | 'missed') => {
   logEvent(type);
+});
+
+ipcMain.handle('notification:test', () => {
+  new Notification({
+    title: 'Notifications are working! 💧',
+    body: 'Watty can send you reminders and reports.',
+  }).show();
 });
 
 ipcMain.handle('events:deleteAll', async () => {
