@@ -69,6 +69,7 @@ function SliderGroup({
   step,
   value,
   onChange,
+  className,
 }: {
   label: string;
   description: string;
@@ -77,9 +78,10 @@ function SliderGroup({
   step: number;
   value: number;
   onChange: (v: number) => void;
+  className?: string;
 }): React.JSX.Element {
   return (
-    <div className="mb-5">
+    <div className={className ?? 'mb-5'}>
       <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">{label}</label>
       <div className="flex items-center gap-3">
         <input
@@ -143,67 +145,39 @@ export default function Settings(): React.JSX.Element {
     <>
       <h1 className="text-primary mb-6 text-xl font-bold">Settings</h1>
 
-      <SliderGroup
-        label="Reminder Interval"
-        description={`Watty will remind you to drink every ${prefs.reminderInterval} minutes.`}
-        min={5}
-        max={120}
-        step={5}
-        value={prefs.reminderInterval}
-        onChange={(v) => setPrefs((p) => ({ ...p, reminderInterval: v }))}
-      />
-
-      <SliderGroup
-        label="Snooze Duration"
-        description="How long to wait before re-firing a snoozed reminder."
-        min={5}
-        max={60}
-        step={5}
-        value={prefs.snoozeMinutes}
-        onChange={(v) => setPrefs((p) => ({ ...p, snoozeMinutes: v }))}
-      />
-
-      {/* Launch at Login */}
+      {/* Reminders */}
       <div className="mb-5">
-        <div className="bg-surface border-edge flex items-center justify-between rounded-xl border px-3.5 py-3 backdrop-blur-md">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-primary text-sm font-medium">Launch at Login</span>
-            <span className="text-muted text-xs">Start Watty automatically when you log in.</span>
-          </div>
-          <label className="relative h-6 w-11 shrink-0">
-            <input
-              type="checkbox"
-              className="toggle-input"
-              checked={prefs.launchAtLogin}
-              onChange={(e) => setPrefs((p) => ({ ...p, launchAtLogin: e.target.checked }))}
-            />
-            <span className="toggle-track" />
-          </label>
-        </div>
-      </div>
-
-      {/* Show Drink Count in Menu Bar */}
-      <div className="mb-5">
-        <div className="bg-surface border-edge flex items-center justify-between rounded-xl border px-3.5 py-3 backdrop-blur-md">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-primary text-sm font-medium">Show Drink Count in Menu Bar</span>
-            <span className="text-muted text-xs">Display today&apos;s drink count next to the menu bar icon.</span>
-          </div>
-          <label className="relative h-6 w-11 shrink-0">
-            <input
-              type="checkbox"
-              className="toggle-input"
-              checked={prefs.showDrinkCount}
-              onChange={(e) => setPrefs((p) => ({ ...p, showDrinkCount: e.target.checked }))}
-            />
-            <span className="toggle-track" />
-          </label>
-        </div>
-      </div>
-
-      {/* Daily Drink Goal */}
-      <div className="mb-5">
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Reminders</label>
         <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <SliderGroup
+            label="Reminder Interval"
+            description={`Watty will remind you to drink every ${prefs.reminderInterval} minutes.`}
+            min={5}
+            max={120}
+            step={5}
+            value={prefs.reminderInterval}
+            onChange={(v) => setPrefs((p) => ({ ...p, reminderInterval: v }))}
+            className="mb-4"
+          />
+          <SliderGroup
+            label="Snooze Duration"
+            description="How long to wait before re-firing a snoozed reminder."
+            min={5}
+            max={60}
+            step={5}
+            value={prefs.snoozeMinutes}
+            onChange={(v) => setPrefs((p) => ({ ...p, snoozeMinutes: v }))}
+            className=""
+          />
+        </div>
+      </div>
+
+      {/* Goal */}
+      <div className="mb-5">
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Goal</label>
+
+        {/* Daily Drink Goal */}
+        <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
               <span className="text-primary text-sm font-medium">Daily Drink Goal</span>
@@ -238,11 +212,30 @@ export default function Settings(): React.JSX.Element {
             </div>
           )}
         </div>
+
+        {/* Show Drink Count in Menu Bar */}
+        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary text-sm font-medium">Show Drink Count in Menu Bar</span>
+              <span className="text-muted text-xs">Display today&apos;s drink count next to the menu bar icon.</span>
+            </div>
+            <label className="relative h-6 w-11 shrink-0">
+              <input
+                type="checkbox"
+                className="toggle-input"
+                checked={prefs.showDrinkCount}
+                onChange={(e) => setPrefs((p) => ({ ...p, showDrinkCount: e.target.checked }))}
+              />
+              <span className="toggle-track" />
+            </label>
+          </div>
+        </div>
       </div>
 
-      {/* Report Notifications */}
+      {/* Reports */}
       <div className="mb-5">
-        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Report Notifications</label>
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Reports</label>
 
         {/* Daily Report */}
         <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
@@ -317,30 +310,58 @@ export default function Settings(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Test Notification */}
+      {/* App */}
       <div className="mb-5">
-        <div className="bg-surface border-edge flex items-center justify-between rounded-xl border px-3.5 py-3 backdrop-blur-md">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-primary text-sm font-medium">Test Notification</span>
-            <span className="text-muted text-xs">Send a test notification to verify system permissions.</span>
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">App</label>
+
+        {/* Launch at Login */}
+        <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary text-sm font-medium">Launch at Login</span>
+              <span className="text-muted text-xs">Start Watty automatically when you log in.</span>
+            </div>
+            <label className="relative h-6 w-11 shrink-0">
+              <input
+                type="checkbox"
+                className="toggle-input"
+                checked={prefs.launchAtLogin}
+                onChange={(e) => setPrefs((p) => ({ ...p, launchAtLogin: e.target.checked }))}
+              />
+              <span className="toggle-track" />
+            </label>
           </div>
-          <TestNotificationButton />
+        </div>
+
+        {/* Test Notification */}
+        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary text-sm font-medium">Test Notification</span>
+              <span className="text-muted text-xs">Send a test notification to verify system permissions.</span>
+            </div>
+            <TestNotificationButton />
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          className="bg-surface hover:bg-edge text-primary border-edge cursor-pointer rounded-lg border px-5 py-2 text-sm font-semibold transition-colors duration-100"
-          onClick={() => setPrefs({ ...DEFAULT_PREFS })}
-        >
-          Reset to Defaults
-        </button>
-        <button
-          className="bg-surface cursor-pointer rounded-lg border border-red-800/50 px-5 py-2 text-sm font-semibold text-red-400 transition-colors duration-100 hover:bg-red-900/40"
-          onClick={() => window.watty.events.deleteAll()}
-        >
-          Delete Data
-        </button>
+      {/* Data */}
+      <div className="mb-5">
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Data</label>
+        <div className="flex items-center gap-3">
+          <button
+            className="bg-surface hover:bg-edge text-primary border-edge cursor-pointer rounded-lg border px-5 py-2 text-sm font-semibold transition-colors duration-100"
+            onClick={() => setPrefs({ ...DEFAULT_PREFS })}
+          >
+            Reset to Defaults
+          </button>
+          <button
+            className="bg-surface cursor-pointer rounded-lg border border-red-800/50 px-5 py-2 text-sm font-semibold text-red-400 transition-colors duration-100 hover:bg-red-900/40"
+            onClick={() => window.watty.events.deleteAll()}
+          >
+            Delete Data
+          </button>
+        </div>
       </div>
     </>
   );
