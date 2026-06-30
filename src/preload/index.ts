@@ -9,7 +9,8 @@ const api = {
   },
   events: {
     getDaily: (date: string): Promise<DrinkEvent[]> => ipcRenderer.invoke('events:getDaily', date),
-    getWeekly: (): Promise<DailySummary[]> => ipcRenderer.invoke('events:getWeekly'),
+    getWeekly: (weekOffset: number = 0): Promise<DailySummary[]> => ipcRenderer.invoke('events:getWeekly', weekOffset),
+    getEarliestEventDate: (): Promise<string | null> => ipcRenderer.invoke('events:getEarliestEventDate'),
     log: (type: 'drink' | 'snooze' | 'missed'): Promise<void> => ipcRenderer.invoke('events:log', type),
     deleteAll: (): Promise<{ deleted: boolean }> => ipcRenderer.invoke('events:deleteAll'),
   },

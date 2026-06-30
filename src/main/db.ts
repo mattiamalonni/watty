@@ -49,7 +49,15 @@ export function getDailyEvents(date: string): DrinkEvent[] {
     .all(`${date}T00:00:00.000Z`, `${date}T23:59:59.999Z`) as DrinkEvent[];
 }
 
-export function getWeeklySummary(): DailySummary[] {
+export function getWeeklySummary(weekOffset: number = 0): DailySummary[] {
+  const now = new Date();
+  const endDate = new Date(now);
+  endDate.setDate(now.getDate() - weekOffset * 7);
+  const startDate = new Date(endDate);
+  startDate.setDate(endDate.getDate() - 6);
+  const start = startDate.toISOString().slice(0, 10);
+  const end = endDate.toISOString().slice(0, 10);
+
   const rows = db
     .prepare(
       `SELECT
@@ -59,11 +67,11 @@ export function getWeeklySummary(): DailySummary[] {
          SUM(CASE WHEN type = 'missed' THEN 1 ELSE 0 END) AS missed,
          COUNT(*) AS total
        FROM events
-       WHERE timestamp >= datetime('now', '-6 days', 'start of day')
+       WHERE substr(timestamp, 1, 10) >= ? AND substr(timestamp, 1, 10) <= ?
        GROUP BY date
        ORDER BY date ASC`,
     )
-    .all() as Array<{
+    .all(start, end) as Array<{
     date: string;
     drinks: number;
     snoozes: number;
@@ -75,6 +83,11 @@ export function getWeeklySummary(): DailySummary[] {
     ...r,
     compliance: r.total > 0 ? Math.round((r.drinks / r.total) * 100) : 0,
   }));
+}
+
+export function getEarliestEventDate(): string | null {
+  const row = db.prepare(`SELECT MIN(substr(timestamp, 1, 10)) AS date FROM events`).get() as { date: string | null };
+  return row?.date ?? null;
 }
 
 export function deleteAllEvents(): void {

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { DailySummary, DrinkEvent } from '../../main/db';
 import ChartBarIcon from '../assets/icons/chart-bar.svg?react';
+import ChevronLeftIcon from '../assets/icons/chevron-left.svg?react';
+import ChevronRightIcon from '../assets/icons/chevron-right.svg?react';
 import DropletIcon from '../assets/icons/droplet.svg?react';
 import FlameIcon from '../assets/icons/flame.svg?react';
 import SkipForwardIcon from '../assets/icons/skip-forward.svg?react';
@@ -33,6 +35,25 @@ function shortDay(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString([], { weekday: 'short' });
 }
 
+function weekLabel(offset: number): string {
+  if (offset === 0) return 'This Week';
+  if (offset === 1) return 'Last Week';
+  const now = new Date();
+  const end = new Date(now);
+  end.setDate(now.getDate() - offset * 7);
+  const start = new Date(end);
+  start.setDate(end.getDate() - 6);
+  const fmt = (d: Date): string => d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function windowStartISO(offset: number): string {
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() - (offset * 7 + 6));
+  return start.toISOString().slice(0, 10);
+}
+
 function calcStreak(summaries: DailySummary[]): number {
   const today = todayISO();
   let streak = 0;
@@ -50,6 +71,8 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
   const [prevTabProp, setPrevTabProp] = useState(tabProp);
   const [dailyEvents, setDailyEvents] = useState<DrinkEvent[]>([]);
   const [weeklySummary, setWeeklySummary] = useState<DailySummary[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
 
   if (prevTabProp !== tabProp) {
     setPrevTabProp(tabProp);
@@ -58,8 +81,12 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
 
   useEffect(() => {
     window.watty.events.getDaily(todayISO()).then(setDailyEvents);
-    window.watty.events.getWeekly().then(setWeeklySummary);
+    window.watty.events.getEarliestEventDate().then(setEarliestEventDate);
   }, []);
+
+  useEffect(() => {
+    window.watty.events.getWeekly(weekOffset).then(setWeeklySummary);
+  }, [weekOffset]);
 
   const totalToday = dailyEvents.length;
   const drinksToday = dailyEvents.filter((e) => e.type === 'drink').length;
@@ -124,6 +151,27 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
 
       {tab === 'week' && (
         <>
+          {/* Week navigation */}
+          <div className="mb-4 flex items-center justify-between">
+            <button
+              onClick={() => setWeekOffset((o) => o + 1)}
+              disabled={!earliestEventDate || earliestEventDate >= windowStartISO(weekOffset)}
+              className="text-muted flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent p-1.5 transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Previous week"
+            >
+              <ChevronLeftIcon width={18} height={18} />
+            </button>
+            <span className="text-primary text-sm font-semibold">{weekLabel(weekOffset)}</span>
+            <button
+              onClick={() => setWeekOffset((o) => o - 1)}
+              disabled={weekOffset === 0}
+              className="text-muted flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent p-1.5 transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Next week"
+            >
+              <ChevronRightIcon width={18} height={18} />
+            </button>
+          </div>
+
           {weeklySummary.length === 0 ? (
             <div className="text-muted py-12 text-center text-sm">
               <div className="text-muted mb-2.5 flex justify-center">
