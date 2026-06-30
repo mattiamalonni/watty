@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
- * Patches the local Electron.app Info.plist so that macOS Notification Center
- * shows notifications during development (unsigned, dev-mode runs).
+ * Patches the local Electron.app so that macOS Notification Center works in dev:
  *
- * - Sets NSUserNotificationAlertStyle = alert  (makes banners appear as alerts)
- * - Sets CFBundleIdentifier = com.watty.app    (matches the production app ID)
+ * 1. Sets NSUserNotificationAlertStyle = alert  (alerts stay until dismissed)
+ * 2. Sets CFBundleIdentifier = com.watty.app    (matches production app ID)
+ * 3. Ad-hoc code-signs Electron.app             (required for UNUserNotificationCenter
+ *    to show the permission dialog — unsigned apps are silently denied)
  *
  * Run automatically via the `postinstall` npm hook.
+ * After first run: open System Settings → Notifications → Watty and enable alerts.
  */
 
 const { execFileSync } = require('child_process');
@@ -47,6 +49,17 @@ if (bundleId !== 'com.watty.app') {
   plistWrite('CFBundleIdentifier', 'string', 'com.watty.app');
   console.log('[patch-electron-notifications] Set CFBundleIdentifier = com.watty.app');
   patched = true;
+}
+
+// Ad-hoc sign the Electron.app so macOS shows the notification permission dialog.
+// Unsigned apps get UNErrorCodeNotificationsNotAllowed without any prompt.
+const appPath = path.join(__dirname, '../node_modules/electron/dist/Electron.app');
+try {
+  execFileSync('codesign', ['--force', '--deep', '--sign', '-', appPath], { stdio: 'pipe' });
+  console.log('[patch-electron-notifications] Ad-hoc signed Electron.app');
+  patched = true;
+} catch (e) {
+  console.warn('[patch-electron-notifications] codesign failed:', e.message);
 }
 
 if (!patched) {
