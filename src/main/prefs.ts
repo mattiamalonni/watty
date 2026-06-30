@@ -13,6 +13,8 @@ export interface Prefs {
   weeklyReportHour: number; // 0–23
   weeklyReportMinute: number; // 0 or 30
   weeklyReportDay: number; // 0=Sun … 6=Sat
+  goalEnabled: boolean;
+  goalTarget: number; // drinks per day
 }
 
 const DEFAULTS: Prefs = {
@@ -26,6 +28,8 @@ const DEFAULTS: Prefs = {
   weeklyReportHour: 9,
   weeklyReportMinute: 0,
   weeklyReportDay: 1,
+  goalEnabled: false,
+  goalTarget: 8,
 };
 
 function prefsPath(): string {

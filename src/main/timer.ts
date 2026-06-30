@@ -1,9 +1,10 @@
 import { Notification } from 'electron';
-import { logEvent } from './db';
+import { getDailyEvents, logEvent } from './db';
 import { loadPrefs } from './prefs';
 
 let reminderTimer: ReturnType<typeof setTimeout> | null = null;
 let snoozeTimer: ReturnType<typeof setTimeout> | null = null;
+let goalNotifiedDate: string | null = null;
 
 function scheduleReminder(delayMs: number): void {
   if (reminderTimer) clearTimeout(reminderTimer);
@@ -31,6 +32,7 @@ function fireReminder(): void {
     if (index === 0) {
       // "I drank"
       logEvent('drink');
+      checkGoalReached(prefs.goalEnabled, prefs.goalTarget);
       scheduleReminder(prefs.reminderInterval * 60 * 1000);
     } else if (index === 1) {
       // "Snooze"
@@ -58,6 +60,22 @@ function fireReminder(): void {
   });
 
   notification.show();
+}
+
+function checkGoalReached(goalEnabled: boolean, goalTarget: number): void {
+  if (!goalEnabled) return;
+  const todayISO = new Date().toISOString().slice(0, 10);
+  if (goalNotifiedDate === todayISO) return;
+  const events = getDailyEvents(todayISO);
+  const drinks = events.filter((e) => e.type === 'drink').length;
+  if (drinks >= goalTarget) {
+    goalNotifiedDate = todayISO;
+    const notif = new Notification({
+      title: 'Daily goal reached! 💧',
+      body: `You've had ${drinks} drink${drinks === 1 ? '' : 's'} today. Great job staying hydrated!`,
+    });
+    notif.show();
+  }
 }
 
 function snoozeReminder(snoozeMinutes: number): void {

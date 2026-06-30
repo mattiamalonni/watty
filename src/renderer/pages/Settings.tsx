@@ -12,6 +12,8 @@ const DEFAULT_PREFS: Prefs = {
   weeklyReportHour: 9,
   weeklyReportMinute: 0,
   weeklyReportDay: 1,
+  goalEnabled: false,
+  goalTarget: 8,
 };
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -156,6 +158,45 @@ export default function Settings(): React.JSX.Element {
             />
             <span className="toggle-track" />
           </label>
+        </div>
+      </div>
+
+      {/* Daily Drink Goal */}
+      <div className="mb-5">
+        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary text-sm font-medium">Daily Drink Goal</span>
+              <span className="text-muted text-xs">Track progress toward a daily drink count target.</span>
+            </div>
+            <label className="relative h-6 w-11 shrink-0">
+              <input
+                type="checkbox"
+                className="toggle-input"
+                checked={prefs.goalEnabled}
+                onChange={(e) => setPrefs((p) => ({ ...p, goalEnabled: e.target.checked }))}
+              />
+              <span className="toggle-track" />
+            </label>
+          </div>
+          {prefs.goalEnabled && (
+            <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
+              <span className="text-muted text-xs">Target</span>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                step={1}
+                value={prefs.goalTarget}
+                onChange={(e) => {
+                  const v = Math.min(20, Math.max(1, Number(e.target.value)));
+                  setPrefs((p) => ({ ...p, goalTarget: v }));
+                }}
+                className="bg-input border-edge text-primary w-16 rounded-md border px-2 py-1 text-center text-sm font-semibold"
+              />
+              <span className="text-muted text-xs">drinks / day</span>
+            </div>
+          )}
         </div>
       </div>
 

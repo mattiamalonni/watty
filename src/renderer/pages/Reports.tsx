@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { DailySummary, DrinkEvent } from '../../main/db';
+import type { Prefs } from '../../main/prefs';
 import ChartBarIcon from '../assets/icons/chart-bar.svg?react';
 import ChevronLeftIcon from '../assets/icons/chevron-left.svg?react';
 import ChevronRightIcon from '../assets/icons/chevron-right.svg?react';
@@ -73,6 +74,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
   const [weeklySummary, setWeeklySummary] = useState<DailySummary[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
+  const [prefs, setPrefs] = useState<Pick<Prefs, 'goalEnabled' | 'goalTarget'>>({ goalEnabled: false, goalTarget: 8 });
 
   if (prevTabProp !== tabProp) {
     setPrevTabProp(tabProp);
@@ -82,6 +84,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
   useEffect(() => {
     window.watty.events.getDaily(todayISO()).then(setDailyEvents);
     window.watty.events.getEarliestEventDate().then(setEarliestEventDate);
+    window.watty.prefs.get().then((p) => setPrefs({ goalEnabled: p.goalEnabled, goalTarget: p.goalTarget }));
   }, []);
 
   useEffect(() => {
@@ -122,6 +125,28 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
               compliance today ({drinksToday}/{totalToday} reminders)
             </span>
           </div>
+
+          {/* Goal progress bar */}
+          {prefs.goalEnabled && (
+            <div className="bg-surface border-edge mb-5 rounded-xl border px-4 py-3 backdrop-blur-md">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-muted text-xs font-semibold tracking-wider uppercase">Daily Goal</span>
+                <span className="text-primary text-sm font-bold">
+                  {drinksToday} / {prefs.goalTarget}
+                </span>
+              </div>
+              <div className="bg-edge h-2 w-full overflow-hidden rounded-full">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, Math.round((drinksToday / prefs.goalTarget) * 100))}%`,
+                    background: drinksToday >= prefs.goalTarget ? '#30d158' : 'var(--accent)',
+                  }}
+                />
+              </div>
+              {drinksToday >= prefs.goalTarget && <p className="text-muted mt-1.5 text-xs">Goal reached today! 🎉</p>}
+            </div>
+          )}
 
           {dailyEvents.length === 0 ? (
             <div className="text-muted py-12 text-center text-sm">
