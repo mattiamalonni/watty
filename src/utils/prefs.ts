@@ -18,7 +18,7 @@ export interface Prefs {
 }
 
 export const DEFAULT_PREFS: Prefs = {
-  reminderInterval: 45,
+  reminderInterval: 30,
   snoozeMinutes: 15,
   launchAtLogin: true,
   dailyReport: true,
@@ -30,7 +30,7 @@ export const DEFAULT_PREFS: Prefs = {
   monthlyReport: true,
   monthlyReportHour: 9,
   monthlyReportMinute: 0,
-  goalDay: 8,
+  goalDay: 10,
   goalWeek: 50,
   goalMonth: 200,
   showDrinkCount: true,

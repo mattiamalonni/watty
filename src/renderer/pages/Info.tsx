@@ -12,7 +12,7 @@ export default function Info(): React.JSX.Element {
 
       <div className="flex flex-col items-center gap-1 text-center">
         <h1 className="text-primary text-2xl font-semibold">Watty</h1>
-        <p className="text-muted text-sm">Stay hydrated.</p>
+        <p className="text-muted text-sm">Stay hydrated</p>
         <p className="text-muted mt-1 text-xs">Version {__APP_VERSION__}</p>
       </div>
 
