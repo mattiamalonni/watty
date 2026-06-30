@@ -248,7 +248,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
               </div>
 
               {/* Streak */}
-              <div className="flex items-center gap-3 rounded-xl bg-gradient-to-br from-[#ff9500] to-[#ff6b00] px-4 py-3.5 text-white">
+              <div className="flex items-center gap-3 rounded-xl bg-linear-to-br from-[#ff9500] to-[#ff6b00] px-4 py-3.5 text-white">
                 <FlameIcon width={28} height={28} />
                 <div>
                   <strong className="text-2xl font-extrabold">{streak}</strong>
