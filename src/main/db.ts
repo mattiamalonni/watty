@@ -79,3 +79,7 @@ export function getWeeklySummary(): DailySummary[] {
     compliance: r.total > 0 ? Math.round((r.drinks / r.total) * 100) : 0
   }))
 }
+
+export function deleteAllEvents(): void {
+  db.prepare('DELETE FROM events').run()
+}

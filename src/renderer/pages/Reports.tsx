@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {
-    Bar,
-    BarChart,
-    Cell,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis
+  Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
 } from 'recharts'
 import type { DailySummary, DrinkEvent } from '../../main/db'
 import ChartBarIcon from '../assets/icons/chart-bar.svg?react'
@@ -53,10 +53,14 @@ function calcStreak(summaries: DailySummary[]): number {
   return streak
 }
 
-export default function Reports(): React.JSX.Element {
-  const [tab, setTab] = useState<Tab>('today')
+export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): React.JSX.Element {
+  const [tab, setTab] = useState<Tab>(tabProp)
   const [dailyEvents, setDailyEvents] = useState<DrinkEvent[]>([])
   const [weeklySummary, setWeeklySummary] = useState<DailySummary[]>([])
+
+  useEffect(() => {
+    setTab(tabProp)
+  }, [tabProp])
 
   useEffect(() => {
     window.watty.events.getDaily(todayISO()).then(setDailyEvents)

@@ -1,10 +1,57 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { Prefs } from '../../main/prefs'
 
 const DEFAULT_PREFS: Prefs = {
   reminderInterval: 45,
   snoozeMinutes: 15,
-  launchAtLogin: true
+  launchAtLogin: true,
+  dailyReport: true,
+  dailyReportHour: 17,
+  dailyReportMinute: 30,
+  weeklyReport: true,
+  weeklyReportHour: 9,
+  weeklyReportMinute: 0,
+  weeklyReportDay: 1
+}
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i)
+const MINUTES = [0, 30]
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+function TimeSelect({
+  hour,
+  minute,
+  onHourChange,
+  onMinuteChange
+}: {
+  hour: number
+  minute: number
+  onHourChange: (v: number) => void
+  onMinuteChange: (v: number) => void
+}): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-1">
+      <select
+        className="text-sm bg-input border border-edge rounded-md px-2 py-1 text-primary cursor-pointer"
+        value={hour}
+        onChange={(e) => onHourChange(Number(e.target.value))}
+      >
+        {HOURS.map((h) => (
+          <option key={h} value={h}>{String(h).padStart(2, '0')}</option>
+        ))}
+      </select>
+      <span className="text-muted text-sm">:</span>
+      <select
+        className="text-sm bg-input border border-edge rounded-md px-2 py-1 text-primary cursor-pointer"
+        value={minute}
+        onChange={(e) => onMinuteChange(Number(e.target.value))}
+      >
+        {MINUTES.map((m) => (
+          <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+        ))}
+      </select>
+    </div>
+  )
 }
 
 function SliderGroup({
@@ -50,20 +97,22 @@ function SliderGroup({
 
 export default function Settings(): React.JSX.Element {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
-  const [saved, setSaved] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const isFirstRender = useRef(true)
 
   useEffect(() => {
     window.watty.prefs.get().then(setPrefs)
   }, [])
 
-  async function handleSave(): Promise<void> {
-    setSaving(true)
-    await window.watty.prefs.set(prefs)
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    const timer = setTimeout(() => {
+      window.watty.prefs.set(prefs)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [prefs])
 
   return (
     <>
@@ -108,17 +157,96 @@ export default function Settings(): React.JSX.Element {
         </div>
       </div>
 
+      {/* Report Notifications */}
+      <div className="mb-5">
+        <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+          Report Notifications
+        </label>
+
+        {/* Daily Report */}
+        <div className="bg-surface border border-edge rounded-xl px-3.5 py-3 backdrop-blur-md mb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-primary">Daily Report</span>
+              <span className="text-xs text-muted">Get a daily hydration summary notification.</span>
+            </div>
+            <label className="relative w-11 h-6 shrink-0">
+              <input
+                type="checkbox"
+                className="toggle-input"
+                checked={prefs.dailyReport}
+                onChange={(e) => setPrefs((p) => ({ ...p, dailyReport: e.target.checked }))}
+              />
+              <span className="toggle-track" />
+            </label>
+          </div>
+          {prefs.dailyReport && (
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-edge">
+              <span className="text-xs text-muted">At</span>
+              <TimeSelect
+                hour={prefs.dailyReportHour}
+                minute={prefs.dailyReportMinute}
+                onHourChange={(v) => setPrefs((p) => ({ ...p, dailyReportHour: v }))}
+                onMinuteChange={(v) => setPrefs((p) => ({ ...p, dailyReportMinute: v }))}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Weekly Report */}
+        <div className="bg-surface border border-edge rounded-xl px-3.5 py-3 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-primary">Weekly Report</span>
+              <span className="text-xs text-muted">Get a weekly hydration summary notification.</span>
+            </div>
+            <label className="relative w-11 h-6 shrink-0">
+              <input
+                type="checkbox"
+                className="toggle-input"
+                checked={prefs.weeklyReport}
+                onChange={(e) => setPrefs((p) => ({ ...p, weeklyReport: e.target.checked }))}
+              />
+              <span className="toggle-track" />
+            </label>
+          </div>
+          {prefs.weeklyReport && (
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-edge">
+              <span className="text-xs text-muted">Every</span>
+              <select
+                className="text-sm bg-input border border-edge rounded-md px-2 py-1 text-primary cursor-pointer"
+                value={prefs.weeklyReportDay}
+                onChange={(e) => setPrefs((p) => ({ ...p, weeklyReportDay: Number(e.target.value) }))}
+              >
+                {DAYS.map((d, i) => (
+                  <option key={i} value={i}>{d}</option>
+                ))}
+              </select>
+              <span className="text-xs text-muted">at</span>
+              <TimeSelect
+                hour={prefs.weeklyReportHour}
+                minute={prefs.weeklyReportMinute}
+                onHourChange={(v) => setPrefs((p) => ({ ...p, weeklyReportHour: v }))}
+                onMinuteChange={(v) => setPrefs((p) => ({ ...p, weeklyReportMinute: v }))}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="flex items-center gap-3">
         <button
-          className="px-5 py-2 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded-lg border-0 cursor-pointer transition-colors duration-100 disabled:opacity-50 disabled:cursor-default"
-          onClick={handleSave}
-          disabled={saving}
+          className="px-5 py-2 bg-surface hover:bg-edge text-primary text-sm font-semibold rounded-lg border border-edge cursor-pointer transition-colors duration-100"
+          onClick={() => setPrefs({ ...DEFAULT_PREFS })}
         >
-          {saving ? 'Saving…' : 'Save'}
+          Reset to Defaults
         </button>
-        {saved && (
-          <span className="text-sm font-medium text-success">✓ Saved</span>
-        )}
+        <button
+          className="px-5 py-2 bg-surface hover:bg-red-900/40 text-red-400 text-sm font-semibold rounded-lg border border-red-800/50 cursor-pointer transition-colors duration-100"
+          onClick={() => window.watty.events.deleteAll()}
+        >
+          Delete Data
+        </button>
       </div>
     </>
   )

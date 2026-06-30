@@ -6,12 +6,26 @@ export interface Prefs {
   reminderInterval: number // minutes, 15–120
   snoozeMinutes: number // minutes
   launchAtLogin: boolean
+  dailyReport: boolean
+  dailyReportHour: number // 0–23
+  dailyReportMinute: number // 0 or 30
+  weeklyReport: boolean
+  weeklyReportHour: number // 0–23
+  weeklyReportMinute: number // 0 or 30
+  weeklyReportDay: number // 0=Sun … 6=Sat
 }
 
 const DEFAULTS: Prefs = {
   reminderInterval: 45,
   snoozeMinutes: 15,
-  launchAtLogin: true
+  launchAtLogin: true,
+  dailyReport: true,
+  dailyReportHour: 17,
+  dailyReportMinute: 30,
+  weeklyReport: true,
+  weeklyReportHour: 9,
+  weeklyReportMinute: 0,
+  weeklyReportDay: 1
 }
 
 function prefsPath(): string {

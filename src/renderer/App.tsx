@@ -34,9 +34,13 @@ function NavItem({
 
 export default function App(): React.JSX.Element {
   const [page, setPage] = useState<Page>('settings')
+  const [reportTab, setReportTab] = useState<'today' | 'week'>('today')
 
   useEffect(() => {
-    const unsubscribe = window.watty.onNavigate((p) => setPage(p))
+    const unsubscribe = window.watty.onNavigate(({ page: p, tab }) => {
+      setPage(p)
+      if (tab) setReportTab(tab)
+    })
     return unsubscribe
   }, [])
 
@@ -50,8 +54,8 @@ export default function App(): React.JSX.Element {
         <div className="no-drag text-xs font-semibold text-muted uppercase tracking-wider px-3.5 pb-2.5">
           Watty
         </div>
-        <NavItem icon={<GearIcon width={16} height={16} />} label="Settings" active={page === 'settings'} onClick={() => setPage('settings')} />
         <NavItem icon={<ChartBarIcon width={16} height={16} />} label="Reports" active={page === 'reports'} onClick={() => setPage('reports')} />
+        <NavItem icon={<GearIcon width={16} height={16} />} label="Settings" active={page === 'settings'} onClick={() => setPage('settings')} />
       </nav>
 
       {/* Content — semi-opaque overlay over vibrancy */}
@@ -60,7 +64,7 @@ export default function App(): React.JSX.Element {
         style={{ background: 'var(--content-bg)' }}
       >
         {page === 'settings' && <Settings />}
-        {page === 'reports' && <Reports />}
+        {page === 'reports' && <Reports tab={reportTab} />}
       </main>
     </div>
   )

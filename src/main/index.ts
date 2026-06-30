@@ -1,6 +1,7 @@
-import { app, ipcMain } from 'electron'
-import { getDailyEvents, getWeeklySummary, initDb, logEvent } from './db'
+import { app, dialog, ipcMain } from 'electron'
+import { deleteAllEvents, getDailyEvents, getWeeklySummary, initDb, logEvent } from './db'
 import { loadPrefs, savePrefs, type Prefs } from './prefs'
+import { restartReportNotifiers, startReportNotifiers } from './report-notifier'
 import { restartTimer, startTimer } from './timer'
 import { createTray } from './tray'
 import { initUpdater } from './updater'
@@ -20,6 +21,7 @@ app.whenReady().then(() => {
   createWindow()
   createTray()
   startTimer()
+  startReportNotifiers(loadPrefs())
   initUpdater()
 
   // Sync login item setting on startup
@@ -41,6 +43,7 @@ ipcMain.handle('prefs:get', () => loadPrefs())
 ipcMain.handle('prefs:set', (_event, prefs: Prefs) => {
   savePrefs(prefs)
   restartTimer()
+  restartReportNotifiers(prefs)
 })
 
 ipcMain.handle('events:getDaily', (_event, date: string) => getDailyEvents(date))
@@ -49,4 +52,20 @@ ipcMain.handle('events:getWeekly', () => getWeeklySummary())
 
 ipcMain.handle('events:log', (_event, type: 'drink' | 'snooze' | 'missed') => {
   logEvent(type)
+})
+
+ipcMain.handle('events:deleteAll', async () => {
+  const { response } = await dialog.showMessageBox({
+    type: 'warning',
+    buttons: ['Delete', 'Cancel'],
+    defaultId: 1,
+    cancelId: 1,
+    message: 'Delete all data?',
+    detail: 'This will permanently delete all drink history. This cannot be undone.'
+  })
+  if (response === 0) {
+    deleteAllEvents()
+    return { deleted: true }
+  }
+  return { deleted: false }
 })

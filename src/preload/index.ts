@@ -1,6 +1,6 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import type { DailySummary, DrinkEvent } from '../main/db'
-import type { Prefs } from '../main/prefs'
+import { contextBridge, ipcRenderer } from 'electron';
+import type { DailySummary, DrinkEvent } from '../main/db';
+import type { Prefs } from '../main/prefs';
 
 const api = {
   prefs: {
@@ -13,11 +13,17 @@ const api = {
     getWeekly: (): Promise<DailySummary[]> =>
       ipcRenderer.invoke('events:getWeekly'),
     log: (type: 'drink' | 'snooze' | 'missed'): Promise<void> =>
-      ipcRenderer.invoke('events:log', type)
+      ipcRenderer.invoke('events:log', type),
+    deleteAll: (): Promise<{ deleted: boolean }> =>
+      ipcRenderer.invoke('events:deleteAll')
   },
-  onNavigate: (callback: (page: 'settings' | 'reports') => void): (() => void) => {
-    const handler = (_: Electron.IpcRendererEvent, page: 'settings' | 'reports'): void =>
-      callback(page)
+  onNavigate: (
+    callback: (payload: { page: 'settings' | 'reports'; tab?: 'today' | 'week' }) => void
+  ): (() => void) => {
+    const handler = (
+      _: Electron.IpcRendererEvent,
+      payload: { page: 'settings' | 'reports'; tab?: 'today' | 'week' }
+    ): void => callback(payload)
     ipcRenderer.on('navigate', handler)
     return () => ipcRenderer.removeListener('navigate', handler)
   }

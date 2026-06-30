@@ -49,9 +49,12 @@ export function createWindow(): BrowserWindow {
   return win
 }
 
-export function showWindow(page: 'settings' | 'reports' = 'settings'): void {
+export function showWindow(
+  page: 'settings' | 'reports' = 'settings',
+  tab?: 'today' | 'week'
+): void {
   if (!win) createWindow()
-  win!.webContents.send('navigate', page)
+  win!.webContents.send('navigate', { page, tab })
   if (!win!.isVisible()) win!.show()
   win!.focus()
 }
