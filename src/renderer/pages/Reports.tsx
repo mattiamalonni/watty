@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { DailySummary, DrinkEvent } from '../../main/db';
 import type { Prefs } from '../../main/prefs';
 import ChartBarIcon from '../assets/icons/chart-bar.svg?react';
 import ChevronLeftIcon from '../assets/icons/chevron-left.svg?react';
 import ChevronRightIcon from '../assets/icons/chevron-right.svg?react';
 import DropletIcon from '../assets/icons/droplet.svg?react';
-import FlameIcon from '../assets/icons/flame.svg?react';
 import SkipForwardIcon from '../assets/icons/skip-forward.svg?react';
 import XCircleIcon from '../assets/icons/x-circle.svg?react';
 
@@ -67,18 +66,6 @@ function windowStartISO(offset: number): string {
   return start.toISOString().slice(0, 10);
 }
 
-function calcStreak(summaries: DailySummary[]): number {
-  const today = todayISO();
-  let streak = 0;
-  const sorted = [...summaries].sort((a, b) => b.date.localeCompare(a.date));
-  for (const s of sorted) {
-    if (s.date > today) continue;
-    if (s.drinks > 0) streak++;
-    else break;
-  }
-  return streak;
-}
-
 export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'month' }): React.JSX.Element {
   const [tab, setTab] = useState<Tab>(tabProp);
   const [prevTabProp, setPrevTabProp] = useState(tabProp);
@@ -88,7 +75,11 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
   const [monthlySummary, setMonthlySummary] = useState<DailySummary[]>([]);
   const [monthOffset, setMonthOffset] = useState(0);
   const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
-  const [prefs, setPrefs] = useState<Pick<Prefs, 'goalEnabled' | 'goalTarget'>>({ goalEnabled: false, goalTarget: 8 });
+  const [prefs, setPrefs] = useState<Pick<Prefs, 'goalDay' | 'goalWeek' | 'goalMonth'>>({
+    goalDay: 0,
+    goalWeek: 0,
+    goalMonth: 0,
+  });
 
   if (prevTabProp !== tabProp) {
     setPrevTabProp(tabProp);
@@ -98,7 +89,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
   useEffect(() => {
     window.watty.events.getDaily(todayISO()).then(setDailyEvents);
     window.watty.events.getEarliestEventDate().then(setEarliestEventDate);
-    window.watty.prefs.get().then((p) => setPrefs({ goalEnabled: p.goalEnabled, goalTarget: p.goalTarget }));
+    window.watty.prefs.get().then((p) => setPrefs({ goalDay: p.goalDay, goalWeek: p.goalWeek, goalMonth: p.goalMonth }));
   }, []);
 
   useEffect(() => {
@@ -109,11 +100,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
     window.watty.events.getMonthly(monthOffset).then(setMonthlySummary);
   }, [monthOffset]);
 
-  const totalToday = dailyEvents.length;
   const drinksToday = dailyEvents.filter((e) => e.type === 'drink').length;
-  const complianceToday = totalToday > 0 ? Math.round((drinksToday / totalToday) * 100) : 0;
-
-  const streak = calcStreak(weeklySummary);
 
   return (
     <>
@@ -129,40 +116,32 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
             }`}
             onClick={() => setTab(t)}
           >
-            {t === 'today' ? 'Today' : t === 'week' ? 'This Week' : 'Month'}
+            {t === 'today' ? 'Today' : t === 'week' ? 'Week' : 'Month'}
           </button>
         ))}
       </div>
 
       {tab === 'today' && (
         <>
-          {/* Compliance badge */}
-          <div className="bg-surface border-edge mb-5 inline-flex items-baseline gap-1.5 rounded-full border px-4 py-1.5 text-2xl font-bold backdrop-blur-md">
-            {complianceToday}%
-            <span className="text-muted text-xs font-normal">
-              compliance today ({drinksToday}/{totalToday} reminders)
-            </span>
-          </div>
-
           {/* Goal progress bar */}
-          {prefs.goalEnabled && (
+          {prefs.goalDay > 0 && (
             <div className="bg-surface border-edge mb-5 rounded-xl border px-4 py-3 backdrop-blur-md">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-muted text-xs font-semibold tracking-wider uppercase">Daily Goal</span>
                 <span className="text-primary text-sm font-bold">
-                  {drinksToday} / {prefs.goalTarget}
+                  {drinksToday} / {prefs.goalDay}
                 </span>
               </div>
               <div className="bg-edge h-2 w-full overflow-hidden rounded-full">
                 <div
                   className="h-full rounded-full transition-all duration-300"
                   style={{
-                    width: `${Math.min(100, Math.round((drinksToday / prefs.goalTarget) * 100))}%`,
-                    background: drinksToday >= prefs.goalTarget ? '#30d158' : 'var(--accent)',
+                    width: `${Math.min(100, Math.round((drinksToday / prefs.goalDay) * 100))}%`,
+                    background: drinksToday >= prefs.goalDay ? '#30d158' : 'var(--accent)',
                   }}
                 />
               </div>
-              {drinksToday >= prefs.goalTarget && <p className="text-muted mt-1.5 text-xs">Goal reached today! 🎉</p>}
+              {drinksToday >= prefs.goalDay && <p className="text-muted mt-1.5 text-xs">Goal reached today! 🎉</p>}
             </div>
           )}
 
@@ -224,6 +203,32 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
             </div>
           ) : (
             <>
+              {/* Week goal progress bar */}
+              {prefs.goalWeek > 0 &&
+                (() => {
+                  const weekDrinks = weeklySummary.reduce((s, d) => s + d.drinks, 0);
+                  return (
+                    <div className="bg-surface border-edge mb-4 rounded-xl border px-4 py-3 backdrop-blur-md">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-muted text-xs font-semibold tracking-wider uppercase">Weekly Goal</span>
+                        <span className="text-primary text-sm font-bold">
+                          {weekDrinks} / {prefs.goalWeek}
+                        </span>
+                      </div>
+                      <div className="bg-edge h-2 w-full overflow-hidden rounded-full">
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min(100, Math.round((weekDrinks / prefs.goalWeek) * 100))}%`,
+                            background: weekDrinks >= prefs.goalWeek ? '#30d158' : 'var(--accent)',
+                          }}
+                        />
+                      </div>
+                      {weekDrinks >= prefs.goalWeek && <p className="text-muted mt-1.5 text-xs">Goal reached this week! 🎉</p>}
+                    </div>
+                  );
+                })()}
+
               {/* Chart */}
               <div className="bg-surface border-edge mb-4 rounded-xl border p-4 backdrop-blur-md">
                 <div className="text-muted mb-3.5 text-xs font-semibold tracking-wider uppercase">Drinks per day</div>
@@ -238,6 +243,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
                     />
                     <YAxis allowDecimals={false} tick={{ fill: '#8e8e93', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                       contentStyle={{
                         background: 'var(--surface)',
                         border: '1px solid var(--border)',
@@ -256,22 +262,12 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
                           : String(l)
                       }
                     />
-                    <Bar dataKey="drinks" radius={[4, 4, 0, 0]}>
-                      {weeklySummary.map((entry, index) => (
-                        <Cell key={index} fill={entry.compliance >= 50 ? '#30d158' : '#ff453a'} />
-                      ))}
-                    </Bar>
+                    <Bar dataKey="drinks" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                    {prefs.goalWeek > 0 && (
+                      <ReferenceLine y={prefs.goalWeek / 7} stroke="var(--accent)" strokeDasharray="4 3" strokeOpacity={0.5} />
+                    )}
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-
-              {/* Streak */}
-              <div className="flex items-center gap-3 rounded-xl bg-linear-to-br from-[#ff9500] to-[#ff6b00] px-4 py-3.5 text-white">
-                <FlameIcon width={28} height={28} />
-                <div>
-                  <strong className="text-2xl font-extrabold">{streak}</strong>
-                  <p className="mt-0.5 text-xs opacity-85">day streak — keep it up!</p>
-                </div>
               </div>
             </>
           )}
@@ -310,6 +306,32 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
             </div>
           ) : (
             <>
+              {/* Month goal progress bar */}
+              {prefs.goalMonth > 0 &&
+                (() => {
+                  const monthDrinks = monthlySummary.reduce((s, d) => s + d.drinks, 0);
+                  return (
+                    <div className="bg-surface border-edge mb-4 rounded-xl border px-4 py-3 backdrop-blur-md">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-muted text-xs font-semibold tracking-wider uppercase">Monthly Goal</span>
+                        <span className="text-primary text-sm font-bold">
+                          {monthDrinks} / {prefs.goalMonth}
+                        </span>
+                      </div>
+                      <div className="bg-edge h-2 w-full overflow-hidden rounded-full">
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min(100, Math.round((monthDrinks / prefs.goalMonth) * 100))}%`,
+                            background: monthDrinks >= prefs.goalMonth ? '#30d158' : 'var(--accent)',
+                          }}
+                        />
+                      </div>
+                      {monthDrinks >= prefs.goalMonth && <p className="text-muted mt-1.5 text-xs">Goal reached this month! 🎉</p>}
+                    </div>
+                  );
+                })()}
+
               {/* Chart */}
               <div className="bg-surface border-edge mb-4 rounded-xl border p-4 backdrop-blur-md">
                 <div className="text-muted mb-3.5 text-xs font-semibold tracking-wider uppercase">Drinks per day</div>
@@ -328,6 +350,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
                     />
                     <YAxis allowDecimals={false} tick={{ fill: '#8e8e93', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                       contentStyle={{
                         background: 'var(--surface)',
                         border: '1px solid var(--border)',
@@ -346,25 +369,20 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
                           : String(l)
                       }
                     />
-                    <Bar dataKey="drinks" radius={[4, 4, 0, 0]}>
-                      {monthlySummary
-                        .filter((d) => d.date <= todayISO())
-                        .map((entry, index) => (
-                          <Cell key={index} fill={entry.compliance >= 50 ? '#30d158' : '#ff453a'} />
-                        ))}
-                    </Bar>
-                    {prefs.goalEnabled && <ReferenceLine y={prefs.goalTarget} stroke="var(--success)" strokeDasharray="3 3" />}
+                    <Bar dataKey="drinks" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                    {prefs.goalMonth > 0 && (
+                      <ReferenceLine
+                        y={
+                          prefs.goalMonth /
+                          new Date(new Date().getFullYear(), new Date().getMonth() - monthOffset + 1, 0).getDate()
+                        }
+                        stroke="var(--accent)"
+                        strokeDasharray="4 3"
+                        strokeOpacity={0.5}
+                      />
+                    )}
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-
-              {/* Streak */}
-              <div className="flex items-center gap-3 rounded-xl bg-linear-to-br from-[#ff9500] to-[#ff6b00] px-4 py-3.5 text-white">
-                <FlameIcon width={28} height={28} />
-                <div>
-                  <strong className="text-2xl font-extrabold">{calcStreak(monthlySummary)}</strong>
-                  <p className="mt-0.5 text-xs opacity-85">day streak — keep it up!</p>
-                </div>
               </div>
             </>
           )}

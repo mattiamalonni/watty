@@ -90,8 +90,9 @@ export function getMonthSummary(monthOffset: number = 0): DailySummary[] {
   const targetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth();
-  const start = new Date(year, month, 1).toISOString().slice(0, 10);
-  const end = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+  const mm = String(month + 1).padStart(2, '0');
+  const start = `${year}-${mm}-01`;
+  const end = `${year}-${mm}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`;
 
   const rows = db
     .prepare(

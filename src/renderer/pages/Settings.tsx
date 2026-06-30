@@ -12,9 +12,10 @@ const DEFAULT_PREFS: Prefs = {
   weeklyReportHour: 9,
   weeklyReportMinute: 0,
   weeklyReportDay: 1,
-  goalEnabled: false,
-  goalTarget: 8,
-  showDrinkCount: false,
+  goalDay: 8,
+  goalWeek: 50,
+  goalMonth: 200,
+  showDrinkCount: true,
 };
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -69,6 +70,7 @@ function SliderGroup({
   step,
   value,
   onChange,
+  formatValue,
   className,
 }: {
   label: string;
@@ -78,6 +80,7 @@ function SliderGroup({
   step: number;
   value: number;
   onChange: (v: number) => void;
+  formatValue?: (v: number) => string;
   className?: string;
 }): React.JSX.Element {
   return (
@@ -94,7 +97,7 @@ function SliderGroup({
           onChange={(e) => onChange(Number(e.target.value))}
         />
         <span className="text-primary bg-input border-edge min-w-14 rounded-md border px-2 py-1 text-center text-sm font-semibold">
-          {value} min
+          {formatValue ? formatValue(value) : `${value} min`}
         </span>
       </div>
       <p className="text-muted mt-1 text-xs">{description}</p>
@@ -176,41 +179,40 @@ export default function Settings(): React.JSX.Element {
       <div className="mb-5">
         <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Goal</label>
 
-        {/* Daily Drink Goal */}
         <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-primary text-sm font-medium">Daily Drink Goal</span>
-              <span className="text-muted text-xs">Track progress toward a daily drink count target.</span>
-            </div>
-            <label className="relative h-6 w-11 shrink-0">
-              <input
-                type="checkbox"
-                className="toggle-input"
-                checked={prefs.goalEnabled}
-                onChange={(e) => setPrefs((p) => ({ ...p, goalEnabled: e.target.checked }))}
-              />
-              <span className="toggle-track" />
-            </label>
-          </div>
-          {prefs.goalEnabled && (
-            <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
-              <span className="text-muted text-xs">Target</span>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                step={1}
-                value={prefs.goalTarget}
-                onChange={(e) => {
-                  const v = Math.min(20, Math.max(1, Number(e.target.value)));
-                  setPrefs((p) => ({ ...p, goalTarget: v }));
-                }}
-                className="bg-input border-edge text-primary w-16 rounded-md border px-2 py-1 text-center text-sm font-semibold"
-              />
-              <span className="text-muted text-xs">drinks / day</span>
-            </div>
-          )}
+          <SliderGroup
+            label="Daily Goal"
+            description="Target number of drinks per day. Set to 0 to disable."
+            min={0}
+            max={20}
+            step={1}
+            value={prefs.goalDay}
+            onChange={(v) => setPrefs((p) => ({ ...p, goalDay: v }))}
+            formatValue={(v) => (v === 0 ? 'Off' : `${v} drinks`)}
+            className="mb-4"
+          />
+          <SliderGroup
+            label="Weekly Goal"
+            description="Target number of drinks per week. Set to 0 to disable."
+            min={0}
+            max={100}
+            step={5}
+            value={prefs.goalWeek}
+            onChange={(v) => setPrefs((p) => ({ ...p, goalWeek: v }))}
+            formatValue={(v) => (v === 0 ? 'Off' : `${v} drinks`)}
+            className="mb-4"
+          />
+          <SliderGroup
+            label="Monthly Goal"
+            description="Target number of drinks per month. Set to 0 to disable."
+            min={0}
+            max={400}
+            step={10}
+            value={prefs.goalMonth}
+            onChange={(v) => setPrefs((p) => ({ ...p, goalMonth: v }))}
+            formatValue={(v) => (v === 0 ? 'Off' : `${v} drinks`)}
+            className=""
+          />
         </div>
 
         {/* Show Drink Count in Menu Bar */}
