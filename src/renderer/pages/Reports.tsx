@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { DailySummary, DrinkEvent } from '../../main/db';
 import type { Prefs } from '../../main/prefs';
 import ChartBarIcon from '../assets/icons/chart-bar.svg?react';
@@ -10,7 +10,7 @@ import FlameIcon from '../assets/icons/flame.svg?react';
 import SkipForwardIcon from '../assets/icons/skip-forward.svg?react';
 import XCircleIcon from '../assets/icons/x-circle.svg?react';
 
-type Tab = 'today' | 'week';
+type Tab = 'today' | 'week' | 'month';
 
 const EVENT_ICON_COMPONENTS: Record<string, React.ReactNode> = {
   drink: <DropletIcon width={18} height={18} />,
@@ -34,6 +34,18 @@ function formatTime(iso: string): string {
 
 function shortDay(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString([], { weekday: 'short' });
+}
+
+function monthLabel(offset: number): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+  return d.toLocaleDateString([], { month: 'long', year: 'numeric' });
+}
+
+function monthStartISO(offset: number): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+  return d.toISOString().slice(0, 10);
 }
 
 function weekLabel(offset: number): string {
@@ -67,12 +79,14 @@ function calcStreak(summaries: DailySummary[]): number {
   return streak;
 }
 
-export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): React.JSX.Element {
+export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'month' }): React.JSX.Element {
   const [tab, setTab] = useState<Tab>(tabProp);
   const [prevTabProp, setPrevTabProp] = useState(tabProp);
   const [dailyEvents, setDailyEvents] = useState<DrinkEvent[]>([]);
   const [weeklySummary, setWeeklySummary] = useState<DailySummary[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [monthlySummary, setMonthlySummary] = useState<DailySummary[]>([]);
+  const [monthOffset, setMonthOffset] = useState(0);
   const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<Pick<Prefs, 'goalEnabled' | 'goalTarget'>>({ goalEnabled: false, goalTarget: 8 });
 
@@ -91,6 +105,10 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
     window.watty.events.getWeekly(weekOffset).then(setWeeklySummary);
   }, [weekOffset]);
 
+  useEffect(() => {
+    window.watty.events.getMonthly(monthOffset).then(setMonthlySummary);
+  }, [monthOffset]);
+
   const totalToday = dailyEvents.length;
   const drinksToday = dailyEvents.filter((e) => e.type === 'drink').length;
   const complianceToday = totalToday > 0 ? Math.round((drinksToday / totalToday) * 100) : 0;
@@ -103,7 +121,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
 
       {/* Tabs */}
       <div className="bg-surface border-edge mb-5 flex w-fit gap-0.5 rounded-lg border p-1 backdrop-blur-md">
-        {(['today', 'week'] as Tab[]).map((t) => (
+        {(['today', 'week', 'month'] as Tab[]).map((t) => (
           <button
             key={t}
             className={`cursor-pointer rounded-lg border-none px-4 py-1.5 text-sm font-medium transition-all duration-100 ${
@@ -111,7 +129,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
             }`}
             onClick={() => setTab(t)}
           >
-            {t === 'today' ? 'Today' : 'This Week'}
+            {t === 'today' ? 'Today' : t === 'week' ? 'This Week' : 'Month'}
           </button>
         ))}
       </div>
@@ -252,6 +270,99 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' }): Re
                 <FlameIcon width={28} height={28} />
                 <div>
                   <strong className="text-2xl font-extrabold">{streak}</strong>
+                  <p className="mt-0.5 text-xs opacity-85">day streak — keep it up!</p>
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {tab === 'month' && (
+        <>
+          {/* Month navigation */}
+          <div className="mb-4 flex items-center justify-between">
+            <button
+              onClick={() => setMonthOffset((o) => o + 1)}
+              disabled={!earliestEventDate || monthStartISO(monthOffset) <= earliestEventDate.slice(0, 7) + '-01'}
+              className="text-muted flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent p-1.5 transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Previous month"
+            >
+              <ChevronLeftIcon width={18} height={18} />
+            </button>
+            <span className="text-primary text-sm font-semibold">{monthLabel(monthOffset)}</span>
+            <button
+              onClick={() => setMonthOffset((o) => o - 1)}
+              disabled={monthOffset === 0}
+              className="text-muted flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent p-1.5 transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Next month"
+            >
+              <ChevronRightIcon width={18} height={18} />
+            </button>
+          </div>
+
+          {monthlySummary.every((d) => d.total === 0) ? (
+            <div className="text-muted py-12 text-center text-sm">
+              <div className="text-muted mb-2.5 flex justify-center">
+                <ChartBarIcon width={36} height={36} />
+              </div>
+              No data for this month yet.
+            </div>
+          ) : (
+            <>
+              {/* Chart */}
+              <div className="bg-surface border-edge mb-4 rounded-xl border p-4 backdrop-blur-md">
+                <div className="text-muted mb-3.5 text-xs font-semibold tracking-wider uppercase">Drinks per day</div>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart
+                    data={monthlySummary.filter((d) => d.date <= todayISO())}
+                    margin={{ top: 4, right: 4, bottom: 4, left: -20 }}
+                  >
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(d) => String(new Date(d).getDate())}
+                      interval={4}
+                      tick={{ fill: '#8e8e93', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis allowDecimals={false} tick={{ fill: '#8e8e93', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 8,
+                        color: 'var(--text)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                      }}
+                      labelFormatter={(l) =>
+                        typeof l === 'string'
+                          ? new Date(l).toLocaleDateString([], {
+                              weekday: 'long',
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : String(l)
+                      }
+                    />
+                    <Bar dataKey="drinks" radius={[4, 4, 0, 0]}>
+                      {monthlySummary
+                        .filter((d) => d.date <= todayISO())
+                        .map((entry, index) => (
+                          <Cell key={index} fill={entry.compliance >= 50 ? '#30d158' : '#ff453a'} />
+                        ))}
+                    </Bar>
+                    {prefs.goalEnabled && <ReferenceLine y={prefs.goalTarget} stroke="var(--success)" strokeDasharray="3 3" />}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Streak */}
+              <div className="flex items-center gap-3 rounded-xl bg-linear-to-br from-[#ff9500] to-[#ff6b00] px-4 py-3.5 text-white">
+                <FlameIcon width={28} height={28} />
+                <div>
+                  <strong className="text-2xl font-extrabold">{calcStreak(monthlySummary)}</strong>
                   <p className="mt-0.5 text-xs opacity-85">day streak — keep it up!</p>
                 </div>
               </div>

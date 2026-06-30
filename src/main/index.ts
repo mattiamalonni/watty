@@ -1,5 +1,5 @@
 import { Notification, app, dialog, ipcMain } from 'electron';
-import { deleteAllEvents, getDailyEvents, getEarliestEventDate, getWeeklySummary, initDb, logEvent } from './db';
+import { deleteAllEvents, getDailyEvents, getEarliestEventDate, getMonthSummary, getWeeklySummary, initDb, logEvent } from './db';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { restartReportNotifiers, startReportNotifiers } from './report-notifier';
 import { restartTimer, startTimer } from './timer';
@@ -52,6 +52,8 @@ ipcMain.handle('events:getDaily', (_event, date: string) => getDailyEvents(date)
 ipcMain.handle('events:getWeekly', (_event, weekOffset: number = 0) => getWeeklySummary(weekOffset));
 
 ipcMain.handle('events:getEarliestEventDate', () => getEarliestEventDate());
+
+ipcMain.handle('events:getMonthly', (_event, monthOffset: number = 0) => getMonthSummary(monthOffset));
 
 ipcMain.handle('events:log', (_event, type: 'drink' | 'snooze' | 'missed') => {
   logEvent(type);

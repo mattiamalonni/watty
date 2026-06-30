@@ -32,7 +32,7 @@ function NavItem({
 
 export default function App(): React.JSX.Element {
   const [page, setPage] = useState<Page>('settings');
-  const [reportTab, setReportTab] = useState<'today' | 'week'>('today');
+  const [reportTab, setReportTab] = useState<'today' | 'week' | 'month'>('today');
 
   useEffect(() => {
     const unsubscribe = window.watty.onNavigate(({ page: p, tab }) => {
