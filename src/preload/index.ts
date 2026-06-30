@@ -17,10 +17,12 @@ const api = {
     deleteAll: (): Promise<{ deleted: boolean }> => ipcRenderer.invoke('events:deleteAll'),
   },
   testNotification: (): Promise<void> => ipcRenderer.invoke('notification:test'),
-  onNavigate: (callback: (payload: { page: 'settings' | 'reports'; tab?: 'day' | 'week' | 'month' }) => void): (() => void) => {
+  onNavigate: (
+    callback: (payload: { page: 'settings' | 'reports' | 'info'; tab?: 'day' | 'week' | 'month' }) => void,
+  ): (() => void) => {
     const handler = (
       _: Electron.IpcRendererEvent,
-      payload: { page: 'settings' | 'reports'; tab?: 'day' | 'week' | 'month' },
+      payload: { page: 'settings' | 'reports' | 'info'; tab?: 'day' | 'week' | 'month' },
     ): void => callback(payload);
     ipcRenderer.on('navigate', handler);
     return () => ipcRenderer.removeListener('navigate', handler);

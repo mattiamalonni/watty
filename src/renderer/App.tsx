@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import ChartBarIcon from './assets/icons/chart-bar.svg?react';
 import GearIcon from './assets/icons/gear.svg?react';
+import InfoIcon from './assets/icons/info.svg?react';
+import Info from './pages/Info';
 import Reports from './pages/reports';
 import Settings from './pages/Settings';
 
-type Page = 'settings' | 'reports';
+type Page = 'settings' | 'reports' | 'info';
 
 function NavItem({
   icon,
@@ -72,12 +74,19 @@ export default function App(): React.JSX.Element {
           active={page === 'settings'}
           onClick={() => setPage('settings')}
         />
+        <NavItem
+          icon={<InfoIcon width={16} height={16} />}
+          label="Info"
+          active={page === 'info'}
+          onClick={() => setPage('info')}
+        />
       </nav>
 
       {/* Content — semi-opaque overlay over vibrancy */}
       <main className="no-drag flex-1 overflow-y-auto px-7 pt-8 pb-6" style={{ background: 'var(--content-bg)' }}>
         {page === 'settings' && <Settings />}
         {page === 'reports' && <Reports tab={reportTab} onTabChange={setReportTab} initialMonthOffset={initialMonthOffset} />}
+        {page === 'info' && <Info />}
       </main>
     </div>
   );

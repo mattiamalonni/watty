@@ -51,6 +51,11 @@ export function createTray(): Tray {
     },
     { type: 'separator' },
     {
+      label: 'About Watty',
+      click: () => showWindow('info'),
+    },
+    { type: 'separator' },
+    {
       label: 'Quit Watty',
       role: 'quit',
       accelerator: 'CmdOrCtrl+Q',
