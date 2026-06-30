@@ -1,22 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { Prefs } from '../../main/prefs';
-
-const DEFAULT_PREFS: Prefs = {
-  reminderInterval: 45,
-  snoozeMinutes: 15,
-  launchAtLogin: true,
-  dailyReport: true,
-  dailyReportHour: 17,
-  dailyReportMinute: 30,
-  weeklyReport: true,
-  weeklyReportHour: 9,
-  weeklyReportMinute: 0,
-  weeklyReportDay: 1,
-  goalDay: 8,
-  goalWeek: 50,
-  goalMonth: 200,
-  showDrinkCount: true,
-};
+import type { Prefs } from '../../utils/prefs';
+import { DEFAULT_PREFS } from '../../utils/prefs';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const MINUTES = [0, 30];

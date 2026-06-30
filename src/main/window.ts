@@ -49,7 +49,7 @@ export function createWindow(): BrowserWindow {
   return win;
 }
 
-export function showWindow(page: 'settings' | 'reports' = 'settings', tab?: 'today' | 'week'): void {
+export function showWindow(page: 'settings' | 'reports' = 'settings', tab?: 'day' | 'week' | 'month'): void {
   if (!win) createWindow();
   const w = win;
   if (!w) return;

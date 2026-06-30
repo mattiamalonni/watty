@@ -39,7 +39,7 @@ function fireDailyNotif(prefs: Prefs): void {
     title: 'Daily Report 📊',
     body: 'Your hydration report for today is ready.',
   });
-  notif.on('click', () => showWindow('reports', 'today'));
+  notif.on('click', () => showWindow('reports', 'day'));
   notif.show();
 
   // Reschedule for same time tomorrow

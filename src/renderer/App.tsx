@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ChartBarIcon from './assets/icons/chart-bar.svg?react';
 import GearIcon from './assets/icons/gear.svg?react';
-import Reports from './pages/Reports';
+import Reports from './pages/reports';
 import Settings from './pages/Settings';
 
 type Page = 'settings' | 'reports';
@@ -32,7 +32,7 @@ function NavItem({
 
 export default function App(): React.JSX.Element {
   const [page, setPage] = useState<Page>('settings');
-  const [reportTab, setReportTab] = useState<'today' | 'week' | 'month'>('today');
+  const [reportTab, setReportTab] = useState<'day' | 'week' | 'month'>('day');
 
   useEffect(() => {
     const unsubscribe = window.watty.onNavigate(({ page: p, tab }) => {
@@ -67,7 +67,7 @@ export default function App(): React.JSX.Element {
       {/* Content — semi-opaque overlay over vibrancy */}
       <main className="no-drag flex-1 overflow-y-auto px-7 pt-8 pb-6" style={{ background: 'var(--content-bg)' }}>
         {page === 'settings' && <Settings />}
-        {page === 'reports' && <Reports tab={reportTab} />}
+        {page === 'reports' && <Reports tab={reportTab} onTabChange={setReportTab} />}
       </main>
     </div>
   );
