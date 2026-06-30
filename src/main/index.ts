@@ -3,7 +3,7 @@ import { deleteAllEvents, getDailyEvents, getEarliestEventDate, getWeeklySummary
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { restartReportNotifiers, startReportNotifiers } from './report-notifier';
 import { restartTimer, startTimer } from './timer';
-import { createTray } from './tray';
+import { createTray, refreshTrayTitle } from './tray';
 import { initUpdater } from './updater';
 import { createWindow } from './window';
 
@@ -44,6 +44,7 @@ ipcMain.handle('prefs:set', (_event, prefs: Prefs) => {
   savePrefs(prefs);
   restartTimer();
   restartReportNotifiers(prefs);
+  refreshTrayTitle();
 });
 
 ipcMain.handle('events:getDaily', (_event, date: string) => getDailyEvents(date));
@@ -54,6 +55,7 @@ ipcMain.handle('events:getEarliestEventDate', () => getEarliestEventDate());
 
 ipcMain.handle('events:log', (_event, type: 'drink' | 'snooze' | 'missed') => {
   logEvent(type);
+  refreshTrayTitle();
 });
 
 ipcMain.handle('notification:test', () => {
@@ -74,6 +76,7 @@ ipcMain.handle('events:deleteAll', async () => {
   });
   if (response === 0) {
     deleteAllEvents();
+    refreshTrayTitle();
     return { deleted: true };
   }
   return { deleted: false };

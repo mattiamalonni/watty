@@ -1,6 +1,7 @@
 import { app, Menu, nativeImage, Tray } from 'electron';
 import path from 'path';
-import { logEvent } from './db';
+import { getDailyEvents, logEvent } from './db';
+import { loadPrefs } from './prefs';
 import { restartTimer } from './timer';
 import { checkForUpdatesManually } from './updater';
 import { showWindow } from './window';
@@ -31,6 +32,7 @@ export function createTray(): Tray {
       click: () => {
         logEvent('drink');
         restartTimer();
+        refreshTrayTitle();
       },
     },
     { type: 'separator' },
@@ -62,7 +64,22 @@ export function createTray(): Tray {
     tray?.popUpContextMenu();
   });
 
+  refreshTrayTitle();
+
   return tray;
+}
+
+export function refreshTrayTitle(): void {
+  if (!tray) return;
+  const prefs = loadPrefs();
+  if (!prefs.showDrinkCount) {
+    tray.setTitle('');
+    return;
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const events = getDailyEvents(today);
+  const count = events.filter((e) => e.type === 'drink').length;
+  tray.setTitle(String(count));
 }
 
 export function getTray(): Tray | null {

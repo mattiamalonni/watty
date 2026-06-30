@@ -14,6 +14,7 @@ const DEFAULT_PREFS: Prefs = {
   weeklyReportDay: 1,
   goalEnabled: false,
   goalTarget: 8,
+  showDrinkCount: false,
 };
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -175,6 +176,25 @@ export default function Settings(): React.JSX.Element {
               className="toggle-input"
               checked={prefs.launchAtLogin}
               onChange={(e) => setPrefs((p) => ({ ...p, launchAtLogin: e.target.checked }))}
+            />
+            <span className="toggle-track" />
+          </label>
+        </div>
+      </div>
+
+      {/* Show Drink Count in Menu Bar */}
+      <div className="mb-5">
+        <div className="bg-surface border-edge flex items-center justify-between rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-primary text-sm font-medium">Show Drink Count in Menu Bar</span>
+            <span className="text-muted text-xs">Display today&apos;s drink count next to the menu bar icon.</span>
+          </div>
+          <label className="relative h-6 w-11 shrink-0">
+            <input
+              type="checkbox"
+              className="toggle-input"
+              checked={prefs.showDrinkCount}
+              onChange={(e) => setPrefs((p) => ({ ...p, showDrinkCount: e.target.checked }))}
             />
             <span className="toggle-track" />
           </label>
