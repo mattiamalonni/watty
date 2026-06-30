@@ -72,7 +72,7 @@ export default function Settings(): React.JSX.Element {
       <SliderGroup
         label="Reminder Interval"
         description={`Watty will remind you to drink every ${prefs.reminderInterval} minutes.`}
-        min={15}
+        min={5}
         max={120}
         step={5}
         value={prefs.reminderInterval}
