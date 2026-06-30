@@ -8,9 +8,10 @@ type Tab = 'day' | 'week' | 'month';
 interface ReportsProps {
   tab: Tab;
   onTabChange: (tab: Tab) => void;
+  initialMonthOffset?: number;
 }
 
-export default function Reports({ tab, onTabChange }: ReportsProps): React.JSX.Element {
+export default function Reports({ tab, onTabChange, initialMonthOffset }: ReportsProps): React.JSX.Element {
   return (
     <>
       <h1 className="text-primary mb-5 text-xl font-bold">Reports</h1>
@@ -32,7 +33,7 @@ export default function Reports({ tab, onTabChange }: ReportsProps): React.JSX.E
 
       {tab === 'day' && <DayTab />}
       {tab === 'week' && <WeekTab />}
-      {tab === 'month' && <MonthTab />}
+      {tab === 'month' && <MonthTab initialOffset={initialMonthOffset} />}
     </>
   );
 }

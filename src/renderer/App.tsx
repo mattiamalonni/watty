@@ -33,11 +33,21 @@ function NavItem({
 export default function App(): React.JSX.Element {
   const [page, setPage] = useState<Page>('settings');
   const [reportTab, setReportTab] = useState<'day' | 'week' | 'month'>('day');
+  const [initialMonthOffset, setInitialMonthOffset] = useState(0);
 
   useEffect(() => {
     const unsubscribe = window.watty.onNavigate(({ page: p, tab }) => {
       setPage(p);
       if (tab) setReportTab(tab);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.watty.onNavigateMonth((offset) => {
+      setPage('reports');
+      setReportTab('month');
+      setInitialMonthOffset(offset);
     });
     return unsubscribe;
   }, []);
@@ -67,7 +77,7 @@ export default function App(): React.JSX.Element {
       {/* Content — semi-opaque overlay over vibrancy */}
       <main className="no-drag flex-1 overflow-y-auto px-7 pt-8 pb-6" style={{ background: 'var(--content-bg)' }}>
         {page === 'settings' && <Settings />}
-        {page === 'reports' && <Reports tab={reportTab} onTabChange={setReportTab} />}
+        {page === 'reports' && <Reports tab={reportTab} onTabChange={setReportTab} initialMonthOffset={initialMonthOffset} />}
       </main>
     </div>
   );

@@ -6,6 +6,7 @@ const api = {
   prefs: {
     get: (): Promise<Prefs> => ipcRenderer.invoke('prefs:get'),
     set: (prefs: Prefs): Promise<void> => ipcRenderer.invoke('prefs:set', prefs),
+    reset: (): Promise<{ reset: boolean }> => ipcRenderer.invoke('prefs:reset'),
   },
   events: {
     getDaily: (date: string): Promise<DrinkEvent[]> => ipcRenderer.invoke('events:getDaily', date),
@@ -23,6 +24,11 @@ const api = {
     ): void => callback(payload);
     ipcRenderer.on('navigate', handler);
     return () => ipcRenderer.removeListener('navigate', handler);
+  },
+  onNavigateMonth: (callback: (offset: number) => void): (() => void) => {
+    const handler = (_: Electron.IpcRendererEvent, payload: { offset: number }): void => callback(payload.offset);
+    ipcRenderer.on('navigate:month', handler);
+    return () => ipcRenderer.removeListener('navigate:month', handler);
   },
 };
 

@@ -58,6 +58,15 @@ export function showWindow(page: 'settings' | 'reports' = 'settings', tab?: 'day
   w.focus();
 }
 
+export function showMonthReport(offset: number): void {
+  if (!win) createWindow();
+  const w = win;
+  if (!w) return;
+  w.webContents.send('navigate:month', { offset });
+  if (!w.isVisible()) w.show();
+  w.focus();
+}
+
 export function getWindow(): BrowserWindow | null {
   return win;
 }

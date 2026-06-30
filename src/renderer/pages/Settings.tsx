@@ -4,7 +4,6 @@ import { DEFAULT_PREFS } from '../../utils/prefs';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const MINUTES = [0, 30];
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function TimeSelect({
   hour,
@@ -198,9 +197,115 @@ export default function Settings(): React.JSX.Element {
             className=""
           />
         </div>
+      </div>
 
-        {/* Show Drink Count in Menu Bar */}
+      {/* Reports */}
+      <div className="mb-5">
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Reports</label>
+
         <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          {/* Daily Report */}
+          <div>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-primary text-sm font-medium">Daily Report</span>
+                <span className="text-muted text-xs">Get a daily hydration summary notification.</span>
+              </div>
+              <label className="relative h-6 w-11 shrink-0">
+                <input
+                  type="checkbox"
+                  className="toggle-input"
+                  checked={prefs.dailyReport}
+                  onChange={(e) => setPrefs((p) => ({ ...p, dailyReport: e.target.checked }))}
+                />
+                <span className="toggle-track" />
+              </label>
+            </div>
+            {prefs.dailyReport && (
+              <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
+                <span className="text-muted text-xs">At</span>
+                <TimeSelect
+                  hour={prefs.dailyReportHour}
+                  minute={prefs.dailyReportMinute}
+                  onHourChange={(v) => setPrefs((p) => ({ ...p, dailyReportHour: v }))}
+                  onMinuteChange={(v) => setPrefs((p) => ({ ...p, dailyReportMinute: v }))}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="border-edge my-3 border-t" />
+
+          {/* Weekly Report */}
+          <div>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-primary text-sm font-medium">Weekly Report</span>
+                <span className="text-muted text-xs">Get a weekly hydration summary notification.</span>
+              </div>
+              <label className="relative h-6 w-11 shrink-0">
+                <input
+                  type="checkbox"
+                  className="toggle-input"
+                  checked={prefs.weeklyReport}
+                  onChange={(e) => setPrefs((p) => ({ ...p, weeklyReport: e.target.checked }))}
+                />
+                <span className="toggle-track" />
+              </label>
+            </div>
+            {prefs.weeklyReport && (
+              <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
+                <span className="text-muted text-xs">Every Monday at</span>
+                <TimeSelect
+                  hour={prefs.weeklyReportHour}
+                  minute={prefs.weeklyReportMinute}
+                  onHourChange={(v) => setPrefs((p) => ({ ...p, weeklyReportHour: v }))}
+                  onMinuteChange={(v) => setPrefs((p) => ({ ...p, weeklyReportMinute: v }))}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="border-edge my-3 border-t" />
+
+          {/* Monthly Report */}
+          <div>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-primary text-sm font-medium">Monthly Report</span>
+                <span className="text-muted text-xs">Get a monthly hydration summary notification.</span>
+              </div>
+              <label className="relative h-6 w-11 shrink-0">
+                <input
+                  type="checkbox"
+                  className="toggle-input"
+                  checked={prefs.monthlyReport}
+                  onChange={(e) => setPrefs((p) => ({ ...p, monthlyReport: e.target.checked }))}
+                />
+                <span className="toggle-track" />
+              </label>
+            </div>
+            {prefs.monthlyReport && (
+              <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
+                <span className="text-muted text-xs">On the 1st of each month at</span>
+                <TimeSelect
+                  hour={prefs.monthlyReportHour}
+                  minute={prefs.monthlyReportMinute}
+                  onHourChange={(v) => setPrefs((p) => ({ ...p, monthlyReportHour: v }))}
+                  onMinuteChange={(v) => setPrefs((p) => ({ ...p, monthlyReportMinute: v }))}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* App */}
+      <div className="mb-5">
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">App</label>
+
+        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          {/* Show Drink Count in Menu Bar */}
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
               <span className="text-primary text-sm font-medium">Show Drink Count in Menu Bar</span>
@@ -216,92 +321,10 @@ export default function Settings(): React.JSX.Element {
               <span className="toggle-track" />
             </label>
           </div>
-        </div>
-      </div>
 
-      {/* Reports */}
-      <div className="mb-5">
-        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Reports</label>
+          <div className="border-edge my-3 border-t" />
 
-        {/* Daily Report */}
-        <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-primary text-sm font-medium">Daily Report</span>
-              <span className="text-muted text-xs">Get a daily hydration summary notification.</span>
-            </div>
-            <label className="relative h-6 w-11 shrink-0">
-              <input
-                type="checkbox"
-                className="toggle-input"
-                checked={prefs.dailyReport}
-                onChange={(e) => setPrefs((p) => ({ ...p, dailyReport: e.target.checked }))}
-              />
-              <span className="toggle-track" />
-            </label>
-          </div>
-          {prefs.dailyReport && (
-            <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
-              <span className="text-muted text-xs">At</span>
-              <TimeSelect
-                hour={prefs.dailyReportHour}
-                minute={prefs.dailyReportMinute}
-                onHourChange={(v) => setPrefs((p) => ({ ...p, dailyReportHour: v }))}
-                onMinuteChange={(v) => setPrefs((p) => ({ ...p, dailyReportMinute: v }))}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Weekly Report */}
-        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-primary text-sm font-medium">Weekly Report</span>
-              <span className="text-muted text-xs">Get a weekly hydration summary notification.</span>
-            </div>
-            <label className="relative h-6 w-11 shrink-0">
-              <input
-                type="checkbox"
-                className="toggle-input"
-                checked={prefs.weeklyReport}
-                onChange={(e) => setPrefs((p) => ({ ...p, weeklyReport: e.target.checked }))}
-              />
-              <span className="toggle-track" />
-            </label>
-          </div>
-          {prefs.weeklyReport && (
-            <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
-              <span className="text-muted text-xs">Every</span>
-              <select
-                className="bg-input border-edge text-primary cursor-pointer rounded-md border px-2 py-1 text-sm"
-                value={prefs.weeklyReportDay}
-                onChange={(e) => setPrefs((p) => ({ ...p, weeklyReportDay: Number(e.target.value) }))}
-              >
-                {DAYS.map((d, i) => (
-                  <option key={i} value={i}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-              <span className="text-muted text-xs">at</span>
-              <TimeSelect
-                hour={prefs.weeklyReportHour}
-                minute={prefs.weeklyReportMinute}
-                onHourChange={(v) => setPrefs((p) => ({ ...p, weeklyReportHour: v }))}
-                onMinuteChange={(v) => setPrefs((p) => ({ ...p, weeklyReportMinute: v }))}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* App */}
-      <div className="mb-5">
-        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">App</label>
-
-        {/* Launch at Login */}
-        <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          {/* Launch at Login */}
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
               <span className="text-primary text-sm font-medium">Launch at Login</span>
@@ -317,10 +340,10 @@ export default function Settings(): React.JSX.Element {
               <span className="toggle-track" />
             </label>
           </div>
-        </div>
 
-        {/* Test Notification */}
-        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="border-edge my-3 border-t" />
+
+          {/* Test Notification */}
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
               <span className="text-primary text-sm font-medium">Test Notification</span>
@@ -334,19 +357,37 @@ export default function Settings(): React.JSX.Element {
       {/* Data */}
       <div className="mb-5">
         <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Data</label>
-        <div className="flex items-center gap-3">
-          <button
-            className="bg-surface hover:bg-edge text-primary border-edge cursor-pointer rounded-lg border px-5 py-2 text-sm font-semibold transition-colors duration-100"
-            onClick={() => setPrefs({ ...DEFAULT_PREFS })}
-          >
-            Reset to Defaults
-          </button>
-          <button
-            className="bg-surface cursor-pointer rounded-lg border border-red-800/50 px-5 py-2 text-sm font-semibold text-red-400 transition-colors duration-100 hover:bg-red-900/40"
-            onClick={() => window.watty.events.deleteAll()}
-          >
-            Delete Data
-          </button>
+        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary text-sm font-medium">Reset to Defaults</span>
+              <span className="text-muted text-xs">Restore all preferences to their original values.</span>
+            </div>
+            <button
+              className="bg-surface hover:bg-edge text-primary border-edge shrink-0 cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors duration-100"
+              onClick={async () => {
+                const { reset } = await window.watty.prefs.reset();
+                if (reset) setPrefs({ ...DEFAULT_PREFS });
+              }}
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="border-edge my-3 border-t" />
+
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-primary text-sm font-medium">Delete Data</span>
+              <span className="text-muted text-xs">Permanently remove all recorded drink events.</span>
+            </div>
+            <button
+              className="bg-surface shrink-0 cursor-pointer rounded-lg border border-red-800/50 px-3 py-1.5 text-sm font-semibold text-red-400 transition-colors duration-100 hover:bg-red-900/40"
+              onClick={() => window.watty.events.deleteAll()}
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </>

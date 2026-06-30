@@ -1,4 +1,5 @@
 import { Notification, app, dialog, ipcMain } from 'electron';
+import { DEFAULT_PREFS } from '../utils/prefs';
 import { deleteAllEvents, getDailyEvents, getEarliestEventDate, getMonthSummary, getWeeklySummary, initDb, logEvent } from './db';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { restartReportNotifiers, startReportNotifiers } from './report-notifier';
@@ -65,6 +66,25 @@ ipcMain.handle('notification:test', () => {
     title: 'Notifications are working! 💧',
     body: 'Watty can send you reminders and reports.',
   }).show();
+});
+
+ipcMain.handle('prefs:reset', async () => {
+  const { response } = await dialog.showMessageBox({
+    type: 'warning',
+    buttons: ['Reset', 'Cancel'],
+    defaultId: 1,
+    cancelId: 1,
+    message: 'Reset to defaults?',
+    detail: 'This will restore all preferences to their original values.',
+  });
+  if (response === 0) {
+    savePrefs({ ...DEFAULT_PREFS } as Prefs);
+    restartTimer();
+    restartReportNotifiers({ ...DEFAULT_PREFS } as Prefs);
+    refreshTrayTitle();
+    return { reset: true };
+  }
+  return { reset: false };
 });
 
 ipcMain.handle('events:deleteAll', async () => {

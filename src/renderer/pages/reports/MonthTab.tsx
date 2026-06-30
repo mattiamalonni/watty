@@ -6,8 +6,8 @@ import GoalProgressBar from '../../components/GoalProgressBar';
 import NavControls from '../../components/NavControls';
 import { useMonthData } from '../../hooks/useMonthData';
 
-export default function MonthTab(): React.JSX.Element {
-  const { summary, monthOffset, setMonthOffset, prefs, earliestEventDate } = useMonthData();
+export default function MonthTab({ initialOffset = 0 }: { initialOffset?: number }): React.JSX.Element {
+  const { summary, monthOffset, setMonthOffset, prefs, earliestEventDate } = useMonthData(initialOffset);
   const monthDrinks = summary.reduce((s, d) => s + d.drinks, 0);
 
   const now = new Date();

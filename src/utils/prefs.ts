@@ -8,7 +8,9 @@ export interface Prefs {
   weeklyReport: boolean;
   weeklyReportHour: number; // 0–23
   weeklyReportMinute: number; // 0 or 30
-  weeklyReportDay: number; // 0=Sun … 6=Sat
+  monthlyReport: boolean;
+  monthlyReportHour: number; // 0–23
+  monthlyReportMinute: number; // 0 or 30
   goalDay: number; // drinks per day, 0 = off
   goalWeek: number; // drinks per week, 0 = off
   goalMonth: number; // drinks per month, 0 = off
@@ -25,7 +27,9 @@ export const DEFAULT_PREFS: Prefs = {
   weeklyReport: true,
   weeklyReportHour: 9,
   weeklyReportMinute: 0,
-  weeklyReportDay: 1,
+  monthlyReport: true,
+  monthlyReportHour: 9,
+  monthlyReportMinute: 0,
   goalDay: 8,
   goalWeek: 50,
   goalMonth: 200,

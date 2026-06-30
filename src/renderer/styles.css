@@ -108,7 +108,7 @@ input[type='range']::-webkit-slider-thumb {
   transition: background 0.2s;
 }
 .toggle-input:checked + .toggle-track {
-  background: var(--success);
+  background: #3b82f6;
 }
 .toggle-track::after {
   content: '';

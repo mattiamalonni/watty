@@ -10,9 +10,9 @@ interface MonthData {
   earliestEventDate: string | null;
 }
 
-export function useMonthData(): MonthData {
+export function useMonthData(initialOffset: number = 0): MonthData {
   const [summary, setSummary] = useState<DailySummary[]>([]);
-  const [monthOffset, setMonthOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(initialOffset);
   const [prefs, setPrefs] = useState<Pick<Prefs, 'goalMonth'>>({ goalMonth: 0 });
   const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
 
