@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import type { Prefs } from '../../main/prefs'
+import React, { useEffect, useRef, useState } from 'react';
+import type { Prefs } from '../../main/prefs';
 
 const DEFAULT_PREFS: Prefs = {
   reminderInterval: 45,
@@ -11,47 +11,51 @@ const DEFAULT_PREFS: Prefs = {
   weeklyReport: true,
   weeklyReportHour: 9,
   weeklyReportMinute: 0,
-  weeklyReportDay: 1
-}
+  weeklyReportDay: 1,
+};
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i)
-const MINUTES = [0, 30]
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = [0, 30];
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function TimeSelect({
   hour,
   minute,
   onHourChange,
-  onMinuteChange
+  onMinuteChange,
 }: {
-  hour: number
-  minute: number
-  onHourChange: (v: number) => void
-  onMinuteChange: (v: number) => void
+  hour: number;
+  minute: number;
+  onHourChange: (v: number) => void;
+  onMinuteChange: (v: number) => void;
 }): React.JSX.Element {
   return (
     <div className="flex items-center gap-1">
       <select
-        className="text-sm bg-input border border-edge rounded-md px-2 py-1 text-primary cursor-pointer"
+        className="bg-input border-edge text-primary cursor-pointer rounded-md border px-2 py-1 text-sm"
         value={hour}
         onChange={(e) => onHourChange(Number(e.target.value))}
       >
         {HOURS.map((h) => (
-          <option key={h} value={h}>{String(h).padStart(2, '0')}</option>
+          <option key={h} value={h}>
+            {String(h).padStart(2, '0')}
+          </option>
         ))}
       </select>
       <span className="text-muted text-sm">:</span>
       <select
-        className="text-sm bg-input border border-edge rounded-md px-2 py-1 text-primary cursor-pointer"
+        className="bg-input border-edge text-primary cursor-pointer rounded-md border px-2 py-1 text-sm"
         value={minute}
         onChange={(e) => onMinuteChange(Number(e.target.value))}
       >
         {MINUTES.map((m) => (
-          <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+          <option key={m} value={m}>
+            {String(m).padStart(2, '0')}
+          </option>
         ))}
       </select>
     </div>
-  )
+  );
 }
 
 function SliderGroup({
@@ -61,21 +65,19 @@ function SliderGroup({
   max,
   step,
   value,
-  onChange
+  onChange,
 }: {
-  label: string
-  description: string
-  min: number
-  max: number
-  step: number
-  value: number
-  onChange: (v: number) => void
+  label: string;
+  description: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (v: number) => void;
 }): React.JSX.Element {
   return (
     <div className="mb-5">
-      <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-        {label}
-      </label>
+      <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">{label}</label>
       <div className="flex items-center gap-3">
         <input
           type="range"
@@ -86,37 +88,37 @@ function SliderGroup({
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
         />
-        <span className="text-sm font-semibold min-w-14 text-primary bg-input border border-edge rounded-md px-2 py-1 text-center">
+        <span className="text-primary bg-input border-edge min-w-14 rounded-md border px-2 py-1 text-center text-sm font-semibold">
           {value} min
         </span>
       </div>
-      <p className="text-xs text-muted mt-1">{description}</p>
+      <p className="text-muted mt-1 text-xs">{description}</p>
     </div>
-  )
+  );
 }
 
 export default function Settings(): React.JSX.Element {
-  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
-  const isFirstRender = useRef(true)
+  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    window.watty.prefs.get().then(setPrefs)
-  }, [])
+    window.watty.prefs.get().then(setPrefs);
+  }, []);
 
   useEffect(() => {
     if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
+      isFirstRender.current = false;
+      return;
     }
     const timer = setTimeout(() => {
-      window.watty.prefs.set(prefs)
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [prefs])
+      window.watty.prefs.set(prefs);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [prefs]);
 
   return (
     <>
-      <h1 className="text-xl font-bold mb-6 text-primary">Settings</h1>
+      <h1 className="text-primary mb-6 text-xl font-bold">Settings</h1>
 
       <SliderGroup
         label="Reminder Interval"
@@ -140,12 +142,12 @@ export default function Settings(): React.JSX.Element {
 
       {/* Launch at Login */}
       <div className="mb-5">
-        <div className="flex items-center justify-between bg-surface border border-edge rounded-xl px-3.5 py-3 backdrop-blur-md">
+        <div className="bg-surface border-edge flex items-center justify-between rounded-xl border px-3.5 py-3 backdrop-blur-md">
           <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-primary">Launch at Login</span>
-            <span className="text-xs text-muted">Start Watty automatically when you log in.</span>
+            <span className="text-primary text-sm font-medium">Launch at Login</span>
+            <span className="text-muted text-xs">Start Watty automatically when you log in.</span>
           </div>
-          <label className="relative w-11 h-6 shrink-0">
+          <label className="relative h-6 w-11 shrink-0">
             <input
               type="checkbox"
               className="toggle-input"
@@ -159,18 +161,16 @@ export default function Settings(): React.JSX.Element {
 
       {/* Report Notifications */}
       <div className="mb-5">
-        <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-          Report Notifications
-        </label>
+        <label className="text-muted mb-2 block text-xs font-semibold tracking-wider uppercase">Report Notifications</label>
 
         {/* Daily Report */}
-        <div className="bg-surface border border-edge rounded-xl px-3.5 py-3 backdrop-blur-md mb-2">
+        <div className="bg-surface border-edge mb-2 rounded-xl border px-3.5 py-3 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-primary">Daily Report</span>
-              <span className="text-xs text-muted">Get a daily hydration summary notification.</span>
+              <span className="text-primary text-sm font-medium">Daily Report</span>
+              <span className="text-muted text-xs">Get a daily hydration summary notification.</span>
             </div>
-            <label className="relative w-11 h-6 shrink-0">
+            <label className="relative h-6 w-11 shrink-0">
               <input
                 type="checkbox"
                 className="toggle-input"
@@ -181,8 +181,8 @@ export default function Settings(): React.JSX.Element {
             </label>
           </div>
           {prefs.dailyReport && (
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-edge">
-              <span className="text-xs text-muted">At</span>
+            <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
+              <span className="text-muted text-xs">At</span>
               <TimeSelect
                 hour={prefs.dailyReportHour}
                 minute={prefs.dailyReportMinute}
@@ -194,13 +194,13 @@ export default function Settings(): React.JSX.Element {
         </div>
 
         {/* Weekly Report */}
-        <div className="bg-surface border border-edge rounded-xl px-3.5 py-3 backdrop-blur-md">
+        <div className="bg-surface border-edge rounded-xl border px-3.5 py-3 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-primary">Weekly Report</span>
-              <span className="text-xs text-muted">Get a weekly hydration summary notification.</span>
+              <span className="text-primary text-sm font-medium">Weekly Report</span>
+              <span className="text-muted text-xs">Get a weekly hydration summary notification.</span>
             </div>
-            <label className="relative w-11 h-6 shrink-0">
+            <label className="relative h-6 w-11 shrink-0">
               <input
                 type="checkbox"
                 className="toggle-input"
@@ -211,18 +211,20 @@ export default function Settings(): React.JSX.Element {
             </label>
           </div>
           {prefs.weeklyReport && (
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-edge">
-              <span className="text-xs text-muted">Every</span>
+            <div className="border-edge mt-3 flex items-center gap-2 border-t pt-3">
+              <span className="text-muted text-xs">Every</span>
               <select
-                className="text-sm bg-input border border-edge rounded-md px-2 py-1 text-primary cursor-pointer"
+                className="bg-input border-edge text-primary cursor-pointer rounded-md border px-2 py-1 text-sm"
                 value={prefs.weeklyReportDay}
                 onChange={(e) => setPrefs((p) => ({ ...p, weeklyReportDay: Number(e.target.value) }))}
               >
                 {DAYS.map((d, i) => (
-                  <option key={i} value={i}>{d}</option>
+                  <option key={i} value={i}>
+                    {d}
+                  </option>
                 ))}
               </select>
-              <span className="text-xs text-muted">at</span>
+              <span className="text-muted text-xs">at</span>
               <TimeSelect
                 hour={prefs.weeklyReportHour}
                 minute={prefs.weeklyReportMinute}
@@ -236,18 +238,18 @@ export default function Settings(): React.JSX.Element {
 
       <div className="flex items-center gap-3">
         <button
-          className="px-5 py-2 bg-surface hover:bg-edge text-primary text-sm font-semibold rounded-lg border border-edge cursor-pointer transition-colors duration-100"
+          className="bg-surface hover:bg-edge text-primary border-edge cursor-pointer rounded-lg border px-5 py-2 text-sm font-semibold transition-colors duration-100"
           onClick={() => setPrefs({ ...DEFAULT_PREFS })}
         >
           Reset to Defaults
         </button>
         <button
-          className="px-5 py-2 bg-surface hover:bg-red-900/40 text-red-400 text-sm font-semibold rounded-lg border border-red-800/50 cursor-pointer transition-colors duration-100"
+          className="bg-surface cursor-pointer rounded-lg border border-red-800/50 px-5 py-2 text-sm font-semibold text-red-400 transition-colors duration-100 hover:bg-red-900/40"
           onClick={() => window.watty.events.deleteAll()}
         >
           Delete Data
         </button>
       </div>
     </>
-  )
+  );
 }

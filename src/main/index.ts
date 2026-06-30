@@ -1,58 +1,58 @@
-import { app, dialog, ipcMain } from 'electron'
-import { deleteAllEvents, getDailyEvents, getWeeklySummary, initDb, logEvent } from './db'
-import { loadPrefs, savePrefs, type Prefs } from './prefs'
-import { restartReportNotifiers, startReportNotifiers } from './report-notifier'
-import { restartTimer, startTimer } from './timer'
-import { createTray } from './tray'
-import { initUpdater } from './updater'
-import { createWindow } from './window'
+import { app, dialog, ipcMain } from 'electron';
+import { deleteAllEvents, getDailyEvents, getWeeklySummary, initDb, logEvent } from './db';
+import { loadPrefs, savePrefs, type Prefs } from './prefs';
+import { restartReportNotifiers, startReportNotifiers } from './report-notifier';
+import { restartTimer, startTimer } from './timer';
+import { createTray } from './tray';
+import { initUpdater } from './updater';
+import { createWindow } from './window';
 
 // macOS: hide from Dock — menu bar only app
-app.dock?.hide()
+app.dock?.hide();
 
 // Single instance lock
 if (!app.requestSingleInstanceLock()) {
-  app.quit()
-  process.exit(0)
+  app.quit();
+  process.exit(0);
 }
 
 app.whenReady().then(() => {
-  initDb()
-  createWindow()
-  createTray()
-  startTimer()
-  startReportNotifiers(loadPrefs())
-  initUpdater()
+  initDb();
+  createWindow();
+  createTray();
+  startTimer();
+  startReportNotifiers(loadPrefs());
+  initUpdater();
 
   // Sync login item setting on startup
-  const prefs = loadPrefs()
-  app.setLoginItemSettings({ openAtLogin: prefs.launchAtLogin })
-})
+  const prefs = loadPrefs();
+  app.setLoginItemSettings({ openAtLogin: prefs.launchAtLogin });
+});
 
 // Keep app alive when all windows are closed (menu bar app stays alive via tray)
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+  if (process.platform !== 'darwin') app.quit();
+});
 
 // before-quit fires when tray "Quit" role is triggered; let it proceed normally
 
 // ── IPC handlers ──────────────────────────────────────────────
 
-ipcMain.handle('prefs:get', () => loadPrefs())
+ipcMain.handle('prefs:get', () => loadPrefs());
 
 ipcMain.handle('prefs:set', (_event, prefs: Prefs) => {
-  savePrefs(prefs)
-  restartTimer()
-  restartReportNotifiers(prefs)
-})
+  savePrefs(prefs);
+  restartTimer();
+  restartReportNotifiers(prefs);
+});
 
-ipcMain.handle('events:getDaily', (_event, date: string) => getDailyEvents(date))
+ipcMain.handle('events:getDaily', (_event, date: string) => getDailyEvents(date));
 
-ipcMain.handle('events:getWeekly', () => getWeeklySummary())
+ipcMain.handle('events:getWeekly', () => getWeeklySummary());
 
 ipcMain.handle('events:log', (_event, type: 'drink' | 'snooze' | 'missed') => {
-  logEvent(type)
-})
+  logEvent(type);
+});
 
 ipcMain.handle('events:deleteAll', async () => {
   const { response } = await dialog.showMessageBox({
@@ -61,11 +61,11 @@ ipcMain.handle('events:deleteAll', async () => {
     defaultId: 1,
     cancelId: 1,
     message: 'Delete all data?',
-    detail: 'This will permanently delete all drink history. This cannot be undone.'
-  })
+    detail: 'This will permanently delete all drink history. This cannot be undone.',
+  });
   if (response === 0) {
-    deleteAllEvents()
-    return { deleted: true }
+    deleteAllEvents();
+    return { deleted: true };
   }
-  return { deleted: false }
-})
+  return { deleted: false };
+});

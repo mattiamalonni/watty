@@ -1,7 +1,7 @@
-import type { WattyAPI } from '../preload/index'
+import type { WattyAPI } from '../preload/index';
 
 declare global {
   interface Window {
-    watty: WattyAPI
+    watty: WattyAPI;
   }
 }

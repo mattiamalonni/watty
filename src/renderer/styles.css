@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ── Tailwind color tokens (maps CSS vars → utility classes) ── */
 @theme inline {
@@ -58,7 +58,7 @@
   body,
   #root {
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
     background: transparent;
     color: var(--text);
     -webkit-font-smoothing: antialiased;
@@ -67,11 +67,15 @@
 }
 
 /* ── Drag regions (not expressible via Tailwind) ── */
-.drag { -webkit-app-region: drag; }
-.no-drag { -webkit-app-region: no-drag; }
+.drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
 
 /* ── Custom range slider ── */
-input[type="range"] {
+input[type='range'] {
   -webkit-appearance: none;
   height: 4px;
   border-radius: 2px;
@@ -79,7 +83,7 @@ input[type="range"] {
   outline: none;
   cursor: pointer;
 }
-input[type="range"]::-webkit-slider-thumb {
+input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
@@ -107,7 +111,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--success);
 }
 .toggle-track::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 3px;
   left: 3px;

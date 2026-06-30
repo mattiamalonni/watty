@@ -1,13 +1,13 @@
-import { is } from '@electron-toolkit/utils'
-import { app, BrowserWindow, shell } from 'electron'
-import { join } from 'path'
+import { is } from '@electron-toolkit/utils';
+import { app, BrowserWindow, shell } from 'electron';
+import { join } from 'path';
 
-let win: BrowserWindow | null = null
-let isQuitting = false
+let win: BrowserWindow | null = null;
+let isQuitting = false;
 
 app.on('before-quit', () => {
-  isQuitting = true
-})
+  isQuitting = true;
+});
 
 export function createWindow(): BrowserWindow {
   win = new BrowserWindow({
@@ -25,40 +25,39 @@ export function createWindow(): BrowserWindow {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
-      nodeIntegration: false
-    }
-  })
+      nodeIntegration: false,
+    },
+  });
 
   win.on('close', (e) => {
-    if (isQuitting) return // allow app to quit
-    e.preventDefault()
-    win?.hide()
-  })
+    if (isQuitting) return; // allow app to quit
+    e.preventDefault();
+    win?.hide();
+  });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
-    return { action: 'deny' }
-  })
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    win.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    win.loadFile(join(__dirname, '../renderer/index.html'))
+    win.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
-  return win
+  return win;
 }
 
-export function showWindow(
-  page: 'settings' | 'reports' = 'settings',
-  tab?: 'today' | 'week'
-): void {
-  if (!win) createWindow()
-  win!.webContents.send('navigate', { page, tab })
-  if (!win!.isVisible()) win!.show()
-  win!.focus()
+export function showWindow(page: 'settings' | 'reports' = 'settings', tab?: 'today' | 'week'): void {
+  if (!win) createWindow();
+  const w = win;
+  if (!w) return;
+  w.webContents.send('navigate', { page, tab });
+  if (!w.isVisible()) w.show();
+  w.focus();
 }
 
 export function getWindow(): BrowserWindow | null {
-  return win
+  return win;
 }
