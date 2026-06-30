@@ -66,12 +66,26 @@ function windowStartISO(offset: number): string {
   return start.toISOString().slice(0, 10);
 }
 
+function dayISO(offset: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - offset);
+  return d.toISOString().slice(0, 10);
+}
+
+function dayLabel(offset: number): string {
+  if (offset === 0) return 'Today';
+  const d = new Date();
+  d.setDate(d.getDate() - offset);
+  return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'month' }): React.JSX.Element {
   const [tab, setTab] = useState<Tab>(tabProp);
   const [prevTabProp, setPrevTabProp] = useState(tabProp);
   const [dailyEvents, setDailyEvents] = useState<DrinkEvent[]>([]);
   const [weeklySummary, setWeeklySummary] = useState<DailySummary[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [dayOffset, setDayOffset] = useState(0);
   const [monthlySummary, setMonthlySummary] = useState<DailySummary[]>([]);
   const [monthOffset, setMonthOffset] = useState(0);
   const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
@@ -87,10 +101,17 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
   }
 
   useEffect(() => {
-    window.watty.events.getDaily(todayISO()).then(setDailyEvents);
     window.watty.events.getEarliestEventDate().then(setEarliestEventDate);
     window.watty.prefs.get().then((p) => setPrefs({ goalDay: p.goalDay, goalWeek: p.goalWeek, goalMonth: p.goalMonth }));
   }, []);
+
+  useEffect(() => {
+    setDayOffset(0);
+  }, [tab]);
+
+  useEffect(() => {
+    window.watty.events.getDaily(dayISO(dayOffset)).then(setDailyEvents);
+  }, [dayOffset]);
 
   useEffect(() => {
     window.watty.events.getWeekly(weekOffset).then(setWeeklySummary);
@@ -123,6 +144,27 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
 
       {tab === 'today' && (
         <>
+          {/* Day navigation */}
+          <div className="mb-4 flex items-center justify-between">
+            <button
+              onClick={() => setDayOffset((o) => o + 1)}
+              disabled={!earliestEventDate || dayISO(dayOffset) <= earliestEventDate}
+              className="text-muted flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent p-1.5 transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Previous day"
+            >
+              <ChevronLeftIcon width={18} height={18} />
+            </button>
+            <span className="text-primary text-sm font-semibold">{dayLabel(dayOffset)}</span>
+            <button
+              onClick={() => setDayOffset((o) => o - 1)}
+              disabled={dayOffset === 0}
+              className="text-muted flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent p-1.5 transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Next day"
+            >
+              <ChevronRightIcon width={18} height={18} />
+            </button>
+          </div>
+
           {/* Goal progress bar */}
           {prefs.goalDay > 0 && (
             <div className="bg-surface border-edge mb-5 rounded-xl border px-4 py-3 backdrop-blur-md">
@@ -141,7 +183,9 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
                   }}
                 />
               </div>
-              {drinksToday >= prefs.goalDay && <p className="text-muted mt-1.5 text-xs">Goal reached today! 🎉</p>}
+              {drinksToday >= prefs.goalDay && (
+                <p className="text-muted mt-1.5 text-xs">{dayOffset === 0 ? 'Goal reached today! 🎉' : 'Goal reached! 🎉'}</p>
+              )}
             </div>
           )}
 
@@ -150,7 +194,7 @@ export default function Reports({ tab: tabProp }: { tab: 'today' | 'week' | 'mon
               <div className="text-muted mb-2.5 flex justify-center">
                 <DropletIcon width={36} height={36} />
               </div>
-              No reminders yet today. Stay hydrated!
+              {dayOffset === 0 ? 'No reminders yet today. Stay hydrated!' : 'No reminders on this day.'}
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">
