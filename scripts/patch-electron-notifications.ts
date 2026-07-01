@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Patches the local Electron.app so that macOS Notification Center works in dev:
  *
  * 1. Sets NSUserNotificationAlertStyle = alert  (alerts stay until dismissed)
- * 2. Sets CFBundleIdentifier = com.watty.app    (matches production app ID)
+ * 2. Sets CFBundleIdentifier = com.mattiamalonni.watty    (matches production app ID)
  * 3. Ad-hoc code-signs Electron.app             (required for UNUserNotificationCenter
  *    to show the permission dialog — unsigned apps are silently denied)
  *
@@ -11,9 +11,9 @@
  * After first run: open System Settings → Notifications → Watty and enable alerts.
  */
 
-const { execFileSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+import { execFileSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 const plistPath = path.join(__dirname, '../node_modules/electron/dist/Electron.app/Contents/Info.plist');
 
@@ -22,7 +22,7 @@ if (!fs.existsSync(plistPath)) {
   process.exit(0);
 }
 
-function plistRead(key) {
+function plistRead(key: string): string | null {
   try {
     return execFileSync('defaults', ['read', plistPath, key], { encoding: 'utf8' }).trim();
   } catch {
@@ -30,7 +30,7 @@ function plistRead(key) {
   }
 }
 
-function plistWrite(key, type, value) {
+function plistWrite(key: string, type: string, value: string): void {
   execFileSync('defaults', ['write', plistPath, key, `-${type}`, value]);
 }
 
@@ -45,9 +45,9 @@ if (alertStyle !== 'alert') {
   patched = true;
 }
 
-if (bundleId !== 'com.watty.app') {
-  plistWrite('CFBundleIdentifier', 'string', 'com.watty.app');
-  console.log('[patch-electron-notifications] Set CFBundleIdentifier = com.watty.app');
+if (bundleId !== 'com.mattiamalonni.watty') {
+  plistWrite('CFBundleIdentifier', 'string', 'com.mattiamalonni.watty');
+  console.log('[patch-electron-notifications] Set CFBundleIdentifier = com.mattiamalonni.watty');
   patched = true;
 }
 
@@ -59,7 +59,7 @@ try {
   console.log('[patch-electron-notifications] Ad-hoc signed Electron.app');
   patched = true;
 } catch (e) {
-  console.warn('[patch-electron-notifications] codesign failed:', e.message);
+  console.warn('[patch-electron-notifications] codesign failed:', (e as Error).message);
 }
 
 if (!patched) {

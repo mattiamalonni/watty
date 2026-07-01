@@ -1,6 +1,6 @@
-appId: com.watty.app
+appId: com.mattiamalonni.watty
 productName: Watty
-copyright: "Copyright © 2024"
+copyright: 'Copyright © 2024'
 
 directories:
   buildResources: resources
@@ -8,8 +8,8 @@ directories:
 
 files:
   - out/**/*
-  - "!**/*.d.ts"
-  - "!**/*.map"
+  - '!**/*.d.ts'
+  - '!**/*.map'
 
 extraResources:
   - from: resources/iconTemplate.png
@@ -26,7 +26,7 @@ mac:
   category: public.app-category.healthcare-fitness
   darkModeSupport: true
   extendInfo:
-    LSUIElement: true  # hides from Dock + no menu bar (app manages its own menu bar via Tray)
+    LSUIElement: true # hides from Dock + no menu bar (app manages its own menu bar via Tray)
     NSUserNotificationAlertStyle: alert
 
 dmg:
