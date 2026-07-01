@@ -18,11 +18,13 @@ export function formatTime(iso: string): string {
 }
 
 export function shortDay(dateStr: string): string {
-  return format(parseLocal(dateStr), 'EEE');
+  return new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(parseLocal(dateStr));
 }
 
 export function monthLabel(offset: number): string {
-  return format(subMonths(startOfMonth(new Date()), offset), 'MMMM yyyy');
+  return new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(
+    subMonths(startOfMonth(new Date()), offset),
+  );
 }
 
 export function monthStartISO(offset: number): string {
@@ -32,10 +34,12 @@ export function monthStartISO(offset: number): string {
 export function weekLabel(offset: number): string {
   const monday = startOfWeek(subWeeks(new Date(), offset), { weekStartsOn: 1 });
   const sunday = addDays(monday, 6);
-  if (monday.getFullYear() !== sunday.getFullYear()) {
-    return `${format(monday, 'MMM d, yyyy')} – ${format(sunday, 'MMM d, yyyy')}`;
-  }
-  return `${format(monday, 'MMM d')} – ${format(sunday, 'MMM d')}`;
+  const crossYear = monday.getFullYear() !== sunday.getFullYear();
+  const opts: Intl.DateTimeFormatOptions = crossYear
+    ? { month: 'short', day: 'numeric', year: 'numeric' }
+    : { month: 'short', day: 'numeric' };
+  const fmt = new Intl.DateTimeFormat(undefined, opts);
+  return `${fmt.format(monday)} – ${fmt.format(sunday)}`;
 }
 
 export function windowStartISO(offset: number): string {
@@ -47,8 +51,9 @@ export function dayISO(offset: number): string {
 }
 
 export function dayLabel(offset: number): string {
-  if (offset === 0) return 'Today';
-  return format(subDays(new Date(), offset), 'EEE, MMM d');
+  return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(
+    subDays(new Date(), offset),
+  );
 }
 
 export function daysInMonth(year: number, month: number): number {
