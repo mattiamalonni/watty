@@ -1,5 +1,5 @@
 import React from 'react';
-import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
 interface DrinkChartProps {
   data: Record<string, string | number>[];
@@ -22,13 +22,9 @@ export default function DrinkChart({
     typeof l === 'string' ? new Date(l).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) : String(l);
 
   return (
-    <div
-      className="bg-surface border-edge mb-4 rounded-xl border p-4 backdrop-blur-md"
-      style={{ backgroundImage: 'linear-gradient(180deg, rgba(0,170,255,0.10) 0%, rgba(0,60,180,0.18) 100%)' }}
-    >
-      <div className="text-muted mb-3.5 text-xs font-semibold tracking-wider uppercase">{label ?? 'Drinks per day'}</div>
-      <ResponsiveContainer width="100%" height={180}>
-        <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 4, left: -20 }}>
+    <div className="mb-4">
+      <ResponsiveContainer width="100%" height={220}>
+        <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 4, left: 0 }}>
           <defs>
             <linearGradient id="waterFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#5ac8fa" stopOpacity={0.95} />
@@ -42,7 +38,6 @@ export default function DrinkChart({
             axisLine={false}
             tickLine={false}
           />
-          <YAxis allowDecimals={false} tick={{ fill: '#8e8e93', fontSize: 11 }} axisLine={false} tickLine={false} />
           <CartesianGrid vertical={false} stroke="rgba(90,200,250,0.18)" strokeDasharray="0" />
           <Tooltip
             cursor={{ stroke: 'rgba(90,200,250,0.4)', strokeWidth: 1, fill: 'rgba(0,170,255,0.06)' }}

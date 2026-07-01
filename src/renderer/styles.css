@@ -23,7 +23,7 @@
     --sidebar-width: 180px;
     --accent: #007aff;
     --accent-hover: #0066d6;
-    --success: #34c759;
+    --success: var(--accent);
     --danger: #ff3b30;
     --content-bg: rgba(246, 246, 246, 0.96);
     --surface: rgba(255, 255, 255, 0.7);
@@ -40,7 +40,7 @@
     :root {
       --accent: #0a84ff;
       --accent-hover: #0077ed;
-      --success: #30d158;
+      --success: var(--accent);
       --danger: #ff453a;
       --content-bg: rgba(28, 28, 30, 0.93);
       --surface: rgba(50, 50, 52, 0.7);

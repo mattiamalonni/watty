@@ -11,12 +11,12 @@ interface GoalProgressBarProps {
 export default function GoalProgressBar({ label, current, goal, reachedMessage }: GoalProgressBarProps): React.JSX.Element {
   const reached = current >= goal;
   return (
-    <div className="bg-surface border-edge mb-4 rounded-xl border px-4 py-3 backdrop-blur-md">
+    <div className="bg-surface mb-6 rounded-xl px-4 py-3 backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-muted text-xs font-semibold tracking-wider uppercase">{label}</span>
           {reached && (
-            <span className="flex items-center gap-1 text-xs text-[#30d158]">
+            <span className="text-accent flex items-center gap-1 text-xs">
               <FlameIcon width={12} height={12} />
               {reachedMessage}
             </span>
@@ -31,7 +31,7 @@ export default function GoalProgressBar({ label, current, goal, reachedMessage }
           className="h-full rounded-full transition-all duration-300"
           style={{
             width: `${Math.min(100, Math.round((current / goal) * 100))}%`,
-            background: reached ? '#30d158' : 'var(--accent)',
+            background: reached ? 'var(--accent)' : 'var(--accent)',
           }}
         />
       </div>
