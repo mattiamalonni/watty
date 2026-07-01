@@ -1,54 +1,18 @@
 import { Notification } from 'electron';
+import { getMondayStr } from '../utils/date';
+import { getDailyEvents, getMonthSummary, getWeeklySummary } from './db';
 import type { Prefs } from './prefs';
 import { showMonthReport, showWindow } from './window';
 
-let dailyTimer: ReturnType<typeof setTimeout> | null = null;
-let weeklyTimer: ReturnType<typeof setTimeout> | null = null;
-let monthlyTimer: ReturnType<typeof setTimeout> | null = null;
+let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-/** ms from now until the next occurrence of hour:minute (tomorrow if already past today) */
-function msUntilTime(hour: number, minute: number): number {
-  const now = new Date();
-  const target = new Date(now);
-  target.setHours(hour, minute, 0, 0);
-  if (target <= now) {
-    target.setDate(target.getDate() + 1);
-  }
-  return target.getTime() - now.getTime();
-}
+const lastFired: { daily: string; weekly: string; monthly: string } = {
+  daily: '',
+  weekly: '',
+  monthly: '',
+};
 
-/** ms from now until next Monday at hour:minute */
-function msUntilWeekly(hour: number, minute: number): number {
-  const MONDAY = 1;
-  const now = new Date();
-  const target = new Date(now);
-  target.setHours(hour, minute, 0, 0);
-
-  const daysUntil = (MONDAY - now.getDay() + 7) % 7;
-  if (daysUntil === 0 && target <= now) {
-    // same weekday but time already passed — next week
-    target.setDate(target.getDate() + 7);
-  } else {
-    target.setDate(target.getDate() + daysUntil);
-  }
-
-  return target.getTime() - now.getTime();
-}
-
-/** ms from now until the 1st of next month at hour:minute */
-function msUntilMonthly(hour: number, minute: number): number {
-  const now = new Date();
-  const target = new Date(now);
-  target.setDate(1);
-  target.setHours(hour, minute, 0, 0);
-  if (target <= now) {
-    // advance to 1st of next month
-    target.setMonth(target.getMonth() + 1);
-  }
-  return target.getTime() - now.getTime();
-}
-
-function fireDailyNotif(prefs: Prefs): void {
+function fireDailyNotif(): void {
   if (!Notification.isSupported()) return;
   const notif = new Notification({
     title: 'Daily Report 📊',
@@ -56,14 +20,9 @@ function fireDailyNotif(prefs: Prefs): void {
   });
   notif.on('click', () => showWindow('reports', 'day'));
   notif.show();
-
-  // Reschedule for same time tomorrow
-  if (prefs.dailyReport) {
-    dailyTimer = setTimeout(() => fireDailyNotif(prefs), msUntilTime(prefs.dailyReportHour, prefs.dailyReportMinute));
-  }
 }
 
-function fireWeeklyNotif(prefs: Prefs): void {
+function fireWeeklyNotif(): void {
   if (!Notification.isSupported()) return;
   const notif = new Notification({
     title: 'Weekly Report 📊',
@@ -71,14 +30,9 @@ function fireWeeklyNotif(prefs: Prefs): void {
   });
   notif.on('click', () => showWindow('reports', 'week'));
   notif.show();
-
-  // Reschedule for next Monday at same time
-  if (prefs.weeklyReport) {
-    weeklyTimer = setTimeout(() => fireWeeklyNotif(prefs), msUntilWeekly(prefs.weeklyReportHour, prefs.weeklyReportMinute));
-  }
 }
 
-function fireMonthlyNotif(prefs: Prefs): void {
+function fireMonthlyNotif(): void {
   if (!Notification.isSupported()) return;
   const notif = new Notification({
     title: 'Monthly Report 📊',
@@ -86,37 +40,57 @@ function fireMonthlyNotif(prefs: Prefs): void {
   });
   notif.on('click', () => showMonthReport(-1));
   notif.show();
+}
 
-  // Reschedule for 1st of next month at same time
-  if (prefs.monthlyReport) {
-    monthlyTimer = setTimeout(() => fireMonthlyNotif(prefs), msUntilMonthly(prefs.monthlyReportHour, prefs.monthlyReportMinute));
+function checkReports(prefs: Prefs, catchup: boolean): void {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const currentDay = now.getDay();
+  const currentDate = now.getDate();
+  const mondayStr = getMondayStr(now);
+  const monthKey = todayStr.slice(0, 7);
+
+  // Daily report
+  if (prefs.dailyReport && lastFired.daily !== todayStr) {
+    const reportMins = prefs.dailyReportHour * 60 + prefs.dailyReportMinute;
+    const due = catchup ? nowMins >= reportMins : nowMins === reportMins;
+    if (due && getDailyEvents(todayStr).length > 0) {
+      lastFired.daily = todayStr;
+      fireDailyNotif();
+    }
+  }
+
+  // Weekly report — fires on Monday
+  if (prefs.weeklyReport && currentDay === 1 && lastFired.weekly !== mondayStr) {
+    const reportMins = prefs.weeklyReportHour * 60 + prefs.weeklyReportMinute;
+    const due = catchup ? nowMins >= reportMins : nowMins === reportMins;
+    if (due && getWeeklySummary(0).some((d) => d.drinks > 0)) {
+      lastFired.weekly = mondayStr;
+      fireWeeklyNotif();
+    }
+  }
+
+  // Monthly report — fires on 1st of month, shows last month's data
+  if (prefs.monthlyReport && currentDate === 1 && lastFired.monthly !== monthKey) {
+    const reportMins = prefs.monthlyReportHour * 60 + prefs.monthlyReportMinute;
+    const due = catchup ? nowMins >= reportMins : nowMins === reportMins;
+    if (due && getMonthSummary(-1).some((d) => d.drinks > 0)) {
+      lastFired.monthly = monthKey;
+      fireMonthlyNotif();
+    }
   }
 }
 
 export function startReportNotifiers(prefs: Prefs): void {
-  if (prefs.dailyReport) {
-    dailyTimer = setTimeout(() => fireDailyNotif(prefs), msUntilTime(prefs.dailyReportHour, prefs.dailyReportMinute));
-  }
-  if (prefs.weeklyReport) {
-    weeklyTimer = setTimeout(() => fireWeeklyNotif(prefs), msUntilWeekly(prefs.weeklyReportHour, prefs.weeklyReportMinute));
-  }
-  if (prefs.monthlyReport) {
-    monthlyTimer = setTimeout(() => fireMonthlyNotif(prefs), msUntilMonthly(prefs.monthlyReportHour, prefs.monthlyReportMinute));
-  }
+  checkReports(prefs, true); // immediate catchup on startup
+  pollInterval = setInterval(() => checkReports(prefs, false), 60_000);
 }
 
 export function stopReportNotifiers(): void {
-  if (dailyTimer !== null) {
-    clearTimeout(dailyTimer);
-    dailyTimer = null;
-  }
-  if (weeklyTimer !== null) {
-    clearTimeout(weeklyTimer);
-    weeklyTimer = null;
-  }
-  if (monthlyTimer !== null) {
-    clearTimeout(monthlyTimer);
-    monthlyTimer = null;
+  if (pollInterval !== null) {
+    clearInterval(pollInterval);
+    pollInterval = null;
   }
 }
 

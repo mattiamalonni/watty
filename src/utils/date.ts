@@ -57,3 +57,11 @@ export function dayLabel(offset: number): string {
 export function daysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
 }
+
+/** Returns the ISO date string (YYYY-MM-DD) of the Monday of the given date's week. */
+export function getMondayStr(now: Date): string {
+  const d = new Date(now);
+  const diff = (d.getDay() - 1 + 7) % 7; // days since Monday
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().slice(0, 10);
+}
