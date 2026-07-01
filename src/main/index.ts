@@ -6,7 +6,7 @@ import { restartReportNotifiers, startReportNotifiers } from './report-notifier'
 import { restartTimer, startTimer } from './timer';
 import { createTray, refreshTrayTitle } from './tray';
 import { initUpdater } from './updater';
-import { createWindow } from './window';
+import { createWindow, getWindow } from './window';
 
 // macOS: hide from Dock — menu bar only app
 app.dock?.hide();
@@ -33,6 +33,19 @@ app.whenReady().then(() => {
 // Keep app alive when all windows are closed (menu bar app stays alive via tray)
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+// Restore/focus window when user clicks dock icon or Cmd+Tabs to app
+app.on('activate', () => {
+  const w = getWindow();
+  if (w) {
+    if (w.isMinimized()) w.restore();
+    if (!w.isVisible()) {
+      app.dock?.show();
+      w.show();
+    }
+    w.focus();
+  }
 });
 
 // before-quit fires when tray "Quit" role is triggered; let it proceed normally

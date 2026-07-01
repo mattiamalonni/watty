@@ -2,6 +2,7 @@ import { Notification } from 'electron';
 import { getMondayStr, localDateISO } from '../utils/date';
 import { getDailyEvents, getMonthSummary, getWeeklySummary } from './db';
 import type { Prefs } from './prefs';
+import { loadState, saveState } from './state';
 import { showMonthReport, showWindow } from './window';
 
 let pollInterval: ReturnType<typeof setInterval> | null = null;
@@ -57,6 +58,7 @@ function checkReports(prefs: Prefs, catchup: boolean): void {
     const due = catchup ? nowMins >= reportMins : nowMins === reportMins;
     if (due && getDailyEvents(todayStr).length > 0) {
       lastFired.daily = todayStr;
+      saveState({ lastFiredDaily: lastFired.daily, lastFiredWeekly: lastFired.weekly, lastFiredMonthly: lastFired.monthly });
       fireDailyNotif();
     }
   }
@@ -67,6 +69,7 @@ function checkReports(prefs: Prefs, catchup: boolean): void {
     const due = catchup ? nowMins >= reportMins : nowMins === reportMins;
     if (due && getWeeklySummary(0).some((d) => d.drinks > 0)) {
       lastFired.weekly = mondayStr;
+      saveState({ lastFiredDaily: lastFired.daily, lastFiredWeekly: lastFired.weekly, lastFiredMonthly: lastFired.monthly });
       fireWeeklyNotif();
     }
   }
@@ -77,12 +80,17 @@ function checkReports(prefs: Prefs, catchup: boolean): void {
     const due = catchup ? nowMins >= reportMins : nowMins === reportMins;
     if (due && getMonthSummary(-1).some((d) => d.drinks > 0)) {
       lastFired.monthly = monthKey;
+      saveState({ lastFiredDaily: lastFired.daily, lastFiredWeekly: lastFired.weekly, lastFiredMonthly: lastFired.monthly });
       fireMonthlyNotif();
     }
   }
 }
 
 export function startReportNotifiers(prefs: Prefs): void {
+  const savedState = loadState();
+  lastFired.daily = savedState.lastFiredDaily;
+  lastFired.weekly = savedState.lastFiredWeekly;
+  lastFired.monthly = savedState.lastFiredMonthly;
   checkReports(prefs, true); // immediate catchup on startup
   pollInterval = setInterval(() => checkReports(prefs, false), 60_000);
 }

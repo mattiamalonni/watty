@@ -33,6 +33,7 @@ export function createWindow(): BrowserWindow {
     if (isQuitting) return; // allow app to quit
     e.preventDefault();
     win?.hide();
+    app.dock?.hide();
   });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -54,7 +55,10 @@ export function showWindow(page: 'settings' | 'reports' | 'info' = 'settings', t
   const w = win;
   if (!w) return;
   w.webContents.send('navigate', { page, tab });
-  if (!w.isVisible()) w.show();
+  if (!w.isVisible()) {
+    app.dock?.show();
+    w.show();
+  }
   w.focus();
 }
 
@@ -63,7 +67,10 @@ export function showMonthReport(offset: number): void {
   const w = win;
   if (!w) return;
   w.webContents.send('navigate:month', { offset });
-  if (!w.isVisible()) w.show();
+  if (!w.isVisible()) {
+    app.dock?.show();
+    w.show();
+  }
   w.focus();
 }
 
