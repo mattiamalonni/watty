@@ -18,7 +18,7 @@ function fireReminder(): void {
 
   const notification = new Notification({
     title: 'Time to drink! 💧',
-    body: 'Stay hydrated — have a glass of water.',
+    body: 'Stay hydrated — time to drink up! 💧',
     actions: [
       { type: 'button', text: '💧 I drank' },
       { type: 'button', text: `Snooze ${prefs.snoozeMinutes}min` },
