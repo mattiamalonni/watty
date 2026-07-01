@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "format": "prettier --write src",
-    "postinstall": "electron-builder install-app-deps && node scripts/patch-electron-notifications.js"
+    "postinstall": "electron-builder install-app-deps && node scripts/patch-electron-notifications.js",
+    "seed": "NODE_OPTIONS=--experimental-sqlite tsx scripts/seed-db.ts"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +37,7 @@
     "jiti": "^2.7.0",
     "prettier": "^3.9.4",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.1",
     "vite": "^7.3.6",
