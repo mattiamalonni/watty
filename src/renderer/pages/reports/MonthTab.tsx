@@ -1,30 +1,18 @@
 import React from 'react';
-import { monthLabel, monthStartISO } from '../../../utils/date';
 import ChartBarIcon from '../../assets/icons/chart-bar.svg?react';
 import DrinkChart from '../../components/DrinkChart';
 import GoalProgressBar from '../../components/GoalProgressBar';
-import NavControls from '../../components/NavControls';
 import { useMonthData } from '../../hooks/useMonthData';
 
-export default function MonthTab({ initialOffset = 0 }: { initialOffset?: number }): React.JSX.Element {
-  const { summary, monthOffset, setMonthOffset, prefs, earliestEventDate } = useMonthData(initialOffset);
+export default function MonthTab({ offset }: { offset: number }): React.JSX.Element {
+  const { summary, prefs } = useMonthData(offset);
   const monthDrinks = summary.reduce((s, d) => s + d.drinks, 0);
 
   const now = new Date();
-  const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() - monthOffset + 1, 0).getDate();
+  const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() - offset + 1, 0).getDate();
 
   return (
     <>
-      <NavControls
-        label={monthLabel(monthOffset)}
-        onPrev={() => setMonthOffset((o) => o + 1)}
-        onNext={() => setMonthOffset((o) => o - 1)}
-        prevDisabled={!earliestEventDate || monthStartISO(monthOffset) <= earliestEventDate.slice(0, 7) + '-01'}
-        nextDisabled={monthOffset === 0}
-        prevAriaLabel="Previous month"
-        nextAriaLabel="Next month"
-      />
-
       {summary.every((d) => d.total === 0) ? (
         <div className="text-muted py-12 text-center text-sm">
           <div className="text-muted mb-2.5 flex justify-center">

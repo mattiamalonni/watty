@@ -1,27 +1,16 @@
 import React from 'react';
-import { shortDay, weekLabel, windowStartISO } from '../../../utils/date';
+import { shortDay } from '../../../utils/date';
 import ChartBarIcon from '../../assets/icons/chart-bar.svg?react';
 import DrinkChart from '../../components/DrinkChart';
 import GoalProgressBar from '../../components/GoalProgressBar';
-import NavControls from '../../components/NavControls';
 import { useWeekData } from '../../hooks/useWeekData';
 
-export default function WeekTab(): React.JSX.Element {
-  const { summary, weekOffset, setWeekOffset, prefs, earliestEventDate } = useWeekData();
+export default function WeekTab({ offset }: { offset: number }): React.JSX.Element {
+  const { summary, prefs } = useWeekData(offset);
   const weekDrinks = summary.reduce((s, d) => s + d.drinks, 0);
 
   return (
     <>
-      <NavControls
-        label={weekLabel(weekOffset)}
-        onPrev={() => setWeekOffset((o) => o + 1)}
-        onNext={() => setWeekOffset((o) => o - 1)}
-        prevDisabled={!earliestEventDate || earliestEventDate >= windowStartISO(weekOffset)}
-        nextDisabled={weekOffset === 0}
-        prevAriaLabel="Previous week"
-        nextAriaLabel="Next week"
-      />
-
       {summary.length === 0 ? (
         <div className="text-muted py-12 text-center text-sm">
           <div className="text-muted mb-2.5 flex justify-center">

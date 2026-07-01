@@ -10,6 +10,7 @@ interface NavControlsProps {
   nextDisabled: boolean;
   prevAriaLabel?: string;
   nextAriaLabel?: string;
+  className?: string;
 }
 
 export default function NavControls({
@@ -20,9 +21,10 @@ export default function NavControls({
   nextDisabled,
   prevAriaLabel = 'Previous',
   nextAriaLabel = 'Next',
+  className = 'mb-4 flex items-center justify-between',
 }: NavControlsProps): React.JSX.Element {
   return (
-    <div className="mb-4 flex items-center justify-between">
+    <div className={className}>
       <button
         onClick={onPrev}
         disabled={prevDisabled}

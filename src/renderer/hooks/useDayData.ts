@@ -5,26 +5,20 @@ import { dayISO } from '../../utils/date';
 
 interface DayData {
   events: DrinkEvent[];
-  dayOffset: number;
-  setDayOffset: React.Dispatch<React.SetStateAction<number>>;
   prefs: Pick<Prefs, 'goalDay'>;
-  earliestEventDate: string | null;
 }
 
-export function useDayData(): DayData {
+export function useDayData(offset: number): DayData {
   const [events, setEvents] = useState<DrinkEvent[]>([]);
-  const [dayOffset, setDayOffset] = useState(0);
   const [prefs, setPrefs] = useState<Pick<Prefs, 'goalDay'>>({ goalDay: 0 });
-  const [earliestEventDate, setEarliestEventDate] = useState<string | null>(null);
 
   useEffect(() => {
-    window.watty.events.getEarliestEventDate().then(setEarliestEventDate);
     window.watty.prefs.get().then((p) => setPrefs({ goalDay: p.goalDay }));
   }, []);
 
   useEffect(() => {
-    window.watty.events.getDaily(dayISO(dayOffset)).then(setEvents);
-  }, [dayOffset]);
+    window.watty.events.getDaily(dayISO(offset)).then(setEvents);
+  }, [offset]);
 
-  return { events, dayOffset, setDayOffset, prefs, earliestEventDate };
+  return { events, prefs };
 }
