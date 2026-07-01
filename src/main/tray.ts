@@ -1,5 +1,6 @@
 import { app, Menu, nativeImage, Tray } from 'electron';
 import path from 'path';
+import { localDateISO } from '../utils/date';
 import { getDailyEvents, logEvent } from './db';
 import { loadPrefs } from './prefs';
 import { restartTimer } from './timer';
@@ -81,7 +82,7 @@ export function refreshTrayTitle(): void {
     tray.setTitle('');
     return;
   }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateISO(new Date());
   const events = getDailyEvents(today);
   const count = events.filter((e) => e.type === 'drink').length;
   tray.setTitle(String(count));

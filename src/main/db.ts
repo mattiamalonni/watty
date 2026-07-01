@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { endOfMonth, format, getDaysInMonth, startOfMonth, subDays, subMonths } from 'date-fns';
 import { app } from 'electron';
 import path from 'path';
 
@@ -35,7 +36,7 @@ export function initDb(): void {
 }
 
 export function logEvent(type: EventType): void {
-  db.prepare('INSERT INTO events (timestamp, type) VALUES (?, ?)').run(new Date().toISOString(), type);
+  db.prepare('INSERT INTO events (timestamp, type) VALUES (?, ?)').run(format(new Date(), 'yyyy-MM-dd HH:mm:ss'), type);
 }
 
 export function getDailyEvents(date: string): DrinkEvent[] {
@@ -46,17 +47,14 @@ export function getDailyEvents(date: string): DrinkEvent[] {
        WHERE timestamp >= ? AND timestamp < ?
        ORDER BY timestamp ASC`,
     )
-    .all(`${date}T00:00:00.000Z`, `${date}T23:59:59.999Z`) as DrinkEvent[];
+    .all(`${date} 00:00:00.000`, `${date} 23:59:59.999`) as DrinkEvent[];
 }
 
 export function getWeeklySummary(weekOffset: number = 0): DailySummary[] {
-  const now = new Date();
-  const endDate = new Date(now);
-  endDate.setDate(now.getDate() - weekOffset * 7);
-  const startDate = new Date(endDate);
-  startDate.setDate(endDate.getDate() - 6);
-  const start = startDate.toISOString().slice(0, 10);
-  const end = endDate.toISOString().slice(0, 10);
+  const endDate = subDays(new Date(), weekOffset * 7);
+  const startDate = subDays(endDate, 6);
+  const start = format(startDate, 'yyyy-MM-dd');
+  const end = format(endDate, 'yyyy-MM-dd');
 
   const rows = db
     .prepare(
@@ -86,13 +84,11 @@ export function getWeeklySummary(weekOffset: number = 0): DailySummary[] {
 }
 
 export function getMonthSummary(monthOffset: number = 0): DailySummary[] {
-  const now = new Date();
-  const targetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
+  const targetDate = subMonths(startOfMonth(new Date()), monthOffset);
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth();
-  const mm = String(month + 1).padStart(2, '0');
-  const start = `${year}-${mm}-01`;
-  const end = `${year}-${mm}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`;
+  const start = format(targetDate, 'yyyy-MM-dd');
+  const end = format(endOfMonth(targetDate), 'yyyy-MM-dd');
 
   const rows = db
     .prepare(
@@ -110,10 +106,10 @@ export function getMonthSummary(monthOffset: number = 0): DailySummary[] {
     .all(start, end) as Array<{ date: string; drinks: number; snoozes: number; missed: number; total: number }>;
 
   const rowMap = new Map(rows.map((r) => [r.date, r]));
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalDays = getDaysInMonth(targetDate);
   const result: DailySummary[] = [];
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  for (let d = 1; d <= totalDays; d++) {
+    const dateStr = format(new Date(year, month, d), 'yyyy-MM-dd');
     const r = rowMap.get(dateStr);
     result.push(
       r

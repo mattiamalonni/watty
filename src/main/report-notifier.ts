@@ -1,5 +1,5 @@
 import { Notification } from 'electron';
-import { getMondayStr } from '../utils/date';
+import { getMondayStr, localDateISO } from '../utils/date';
 import { getDailyEvents, getMonthSummary, getWeeklySummary } from './db';
 import type { Prefs } from './prefs';
 import { showMonthReport, showWindow } from './window';
@@ -44,7 +44,7 @@ function fireMonthlyNotif(): void {
 
 function checkReports(prefs: Prefs, catchup: boolean): void {
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = localDateISO(now);
   const nowMins = now.getHours() * 60 + now.getMinutes();
   const currentDay = now.getDay();
   const currentDate = now.getDate();
