@@ -3,7 +3,7 @@ import type { Prefs } from '../../utils/prefs';
 import { DEFAULT_PREFS } from '../../utils/prefs';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINUTES = [0, 30];
+const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
 function TimeSelect({
   hour,

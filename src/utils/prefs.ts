@@ -4,13 +4,13 @@ export interface Prefs {
   launchAtLogin: boolean;
   dailyReport: boolean;
   dailyReportHour: number; // 0–23
-  dailyReportMinute: number; // 0 or 30
+  dailyReportMinute: number; // 0–55, step 5
   weeklyReport: boolean;
   weeklyReportHour: number; // 0–23
-  weeklyReportMinute: number; // 0 or 30
+  weeklyReportMinute: number; // 0–55, step 5
   monthlyReport: boolean;
   monthlyReportHour: number; // 0–23
-  monthlyReportMinute: number; // 0 or 30
+  monthlyReportMinute: number; // 0–55, step 5
   goalDay: number; // drinks per day, 0 = off
   goalWeek: number; // drinks per week, 0 = off
   goalMonth: number; // drinks per month, 0 = off
