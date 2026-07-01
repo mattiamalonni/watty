@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { endOfMonth, format, getDaysInMonth, startOfMonth, subDays, subMonths } from 'date-fns';
+import { addDays, endOfMonth, format, getDaysInMonth, startOfMonth, startOfWeek, subMonths, subWeeks } from 'date-fns';
 import { app } from 'electron';
 import path from 'path';
 
@@ -51,10 +51,9 @@ export function getDailyEvents(date: string): DrinkEvent[] {
 }
 
 export function getWeeklySummary(weekOffset: number = 0): DailySummary[] {
-  const endDate = subDays(new Date(), weekOffset * 7);
-  const startDate = subDays(endDate, 6);
-  const start = format(startDate, 'yyyy-MM-dd');
-  const end = format(endDate, 'yyyy-MM-dd');
+  const monday = startOfWeek(subWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
+  const start = format(monday, 'yyyy-MM-dd');
+  const end = format(addDays(monday, 6), 'yyyy-MM-dd');
 
   const rows = db
     .prepare(
@@ -69,18 +68,20 @@ export function getWeeklySummary(weekOffset: number = 0): DailySummary[] {
        GROUP BY date
        ORDER BY date ASC`,
     )
-    .all(start, end) as Array<{
-    date: string;
-    drinks: number;
-    snoozes: number;
-    missed: number;
-    total: number;
-  }>;
+    .all(start, end) as Array<{ date: string; drinks: number; snoozes: number; missed: number; total: number }>;
 
-  return rows.map((r) => ({
-    ...r,
-    compliance: r.total > 0 ? Math.round((r.drinks / r.total) * 100) : 0,
-  }));
+  const rowMap = new Map(rows.map((r) => [r.date, r]));
+  const result: DailySummary[] = [];
+  for (let d = 0; d < 7; d++) {
+    const dateStr = format(addDays(monday, d), 'yyyy-MM-dd');
+    const r = rowMap.get(dateStr);
+    result.push(
+      r
+        ? { ...r, compliance: r.total > 0 ? Math.round((r.drinks / r.total) * 100) : 0 }
+        : { date: dateStr, drinks: 0, snoozes: 0, missed: 0, total: 0, compliance: 0 },
+    );
+  }
+  return result;
 }
 
 export function getMonthSummary(monthOffset: number = 0): DailySummary[] {

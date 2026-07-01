@@ -1,4 +1,5 @@
 import React from 'react';
+import FlameIcon from '../assets/icons/flame.svg?react';
 
 interface GoalProgressBarProps {
   label: string;
@@ -12,7 +13,15 @@ export default function GoalProgressBar({ label, current, goal, reachedMessage }
   return (
     <div className="bg-surface border-edge mb-4 rounded-xl border px-4 py-3 backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-muted text-xs font-semibold tracking-wider uppercase">{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-muted text-xs font-semibold tracking-wider uppercase">{label}</span>
+          {reached && (
+            <span className="flex items-center gap-1 text-xs text-[#30d158]">
+              <FlameIcon width={12} height={12} />
+              {reachedMessage}
+            </span>
+          )}
+        </div>
         <span className="text-primary text-sm font-bold">
           {current} / {goal}
         </span>
@@ -26,7 +35,6 @@ export default function GoalProgressBar({ label, current, goal, reachedMessage }
           }}
         />
       </div>
-      {reached && <p className="text-muted mt-1.5 text-xs">{reachedMessage}</p>}
     </div>
   );
 }

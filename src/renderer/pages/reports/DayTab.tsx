@@ -26,12 +26,7 @@ export default function DayTab(): React.JSX.Element {
       />
 
       {prefs.goalDay > 0 && (
-        <GoalProgressBar
-          label="Daily Goal"
-          current={drinksToday}
-          goal={prefs.goalDay}
-          reachedMessage={dayOffset === 0 ? 'Goal reached today! 🎉' : 'Goal reached! 🎉'}
-        />
+        <GoalProgressBar label="Daily Goal" current={drinksToday} goal={prefs.goalDay} reachedMessage="Goal reached!" />
       )}
 
       <EventList events={events} dayOffset={dayOffset} />

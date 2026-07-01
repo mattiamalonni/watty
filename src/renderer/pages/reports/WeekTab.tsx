@@ -32,12 +32,7 @@ export default function WeekTab(): React.JSX.Element {
       ) : (
         <>
           {prefs.goalWeek > 0 && (
-            <GoalProgressBar
-              label="Weekly Goal"
-              current={weekDrinks}
-              goal={prefs.goalWeek}
-              reachedMessage="Goal reached this week! 🎉"
-            />
+            <GoalProgressBar label="Weekly Goal" current={weekDrinks} goal={prefs.goalWeek} reachedMessage="Goal reached!" />
           )}
           <DrinkChart
             data={summary}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { monthLabel, monthStartISO, todayISO } from '../../../utils/date';
+import { monthLabel, monthStartISO } from '../../../utils/date';
 import ChartBarIcon from '../../assets/icons/chart-bar.svg?react';
 import DrinkChart from '../../components/DrinkChart';
 import GoalProgressBar from '../../components/GoalProgressBar';
@@ -12,7 +12,6 @@ export default function MonthTab({ initialOffset = 0 }: { initialOffset?: number
 
   const now = new Date();
   const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() - monthOffset + 1, 0).getDate();
-  const filteredData = summary.filter((d) => d.date <= todayISO());
 
   return (
     <>
@@ -36,15 +35,10 @@ export default function MonthTab({ initialOffset = 0 }: { initialOffset?: number
       ) : (
         <>
           {prefs.goalMonth > 0 && (
-            <GoalProgressBar
-              label="Monthly Goal"
-              current={monthDrinks}
-              goal={prefs.goalMonth}
-              reachedMessage="Goal reached this month! 🎉"
-            />
+            <GoalProgressBar label="Monthly Goal" current={monthDrinks} goal={prefs.goalMonth} reachedMessage="Goal reached!" />
           )}
           <DrinkChart
-            data={filteredData}
+            data={summary}
             xAxisFormatter={(d) => String(new Date(d).getDate())}
             referenceLineY={prefs.goalMonth > 0 ? prefs.goalMonth / daysInCurrentMonth : undefined}
           />

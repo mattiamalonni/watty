@@ -1,4 +1,4 @@
-import { format, getDaysInMonth, parse, startOfMonth, startOfWeek, subDays, subMonths } from 'date-fns';
+import { addDays, format, getDaysInMonth, parse, startOfMonth, startOfWeek, subDays, subMonths, subWeeks } from 'date-fns';
 
 /** Parse a YYYY-MM-DD string as local midnight (avoids UTC-midnight pitfall). */
 function parseLocal(dateStr: string): Date {
@@ -30,15 +30,16 @@ export function monthStartISO(offset: number): string {
 }
 
 export function weekLabel(offset: number): string {
-  if (offset === 0) return 'This Week';
-  if (offset === 1) return 'Last Week';
-  const end = subDays(new Date(), offset * 7);
-  const start = subDays(end, 6);
-  return `${format(start, 'MMM d')} – ${format(end, 'MMM d')}`;
+  const monday = startOfWeek(subWeeks(new Date(), offset), { weekStartsOn: 1 });
+  const sunday = addDays(monday, 6);
+  if (monday.getFullYear() !== sunday.getFullYear()) {
+    return `${format(monday, 'MMM d, yyyy')} – ${format(sunday, 'MMM d, yyyy')}`;
+  }
+  return `${format(monday, 'MMM d')} – ${format(sunday, 'MMM d')}`;
 }
 
 export function windowStartISO(offset: number): string {
-  return format(subDays(new Date(), offset * 7 + 6), 'yyyy-MM-dd');
+  return format(startOfWeek(subWeeks(new Date(), offset), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 }
 
 export function dayISO(offset: number): string {
